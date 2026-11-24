@@ -1,0 +1,660 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Домашка ФИПИ</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--blue:#007aff;--green:#34c759;--red:#ff3b30;--orange:#ff9500;--text:#1c1c1e;--sub:#8e8e93;--line:rgba(60,60,67,.12);--fill:rgba(118,118,128,.12)}
+body{margin:0;font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;color:var(--text);background:#f2f2f7;min-height:100vh}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:
+radial-gradient(600px 420px at 8% 0,rgba(0,122,255,.12),transparent),
+radial-gradient(520px 420px at 100% 15%,rgba(175,82,222,.09),transparent),
+radial-gradient(520px 420px at 40% 100%,rgba(52,199,89,.08),transparent)}
+.glass{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05)}
+.top{position:sticky;top:10px;z-index:20;margin:10px auto 0;max-width:780px;width:calc(100% - 24px);border-radius:18px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{font-weight:600}
+.top .right{display:flex;align-items:center;gap:10px;font-size:14px}
+.wrap{max-width:780px;margin:0 auto;padding:14px 12px 110px}
+.card{border-radius:20px;padding:18px;margin-bottom:14px}
+h1{font-size:26px;margin:6px 0 4px;letter-spacing:-.4px}
+h2{font-size:19px;margin:0 0 12px;letter-spacing:-.2px}
+.muted{color:var(--sub)}.small{font-size:13px}
+a{color:var(--blue);text-decoration:none}
+input,textarea,select{width:100%;font:inherit;color:inherit;background:var(--fill);border:0;border-radius:12px;padding:11px 13px;margin-bottom:10px;outline:none}
+input:focus,textarea:focus,select:focus{box-shadow:0 0 0 2px rgba(0,122,255,.35)}
+textarea{resize:vertical;min-height:70px}
+input[type=checkbox]{width:20px;height:20px;margin:2px 0 0;accent-color:var(--blue);flex:none}
+label.lbl,.lbl{display:block;font-size:13px;color:var(--sub);margin:2px 4px 5px}
+.btn{display:inline-block;border:0;border-radius:12px;background:var(--blue);color:#fff;font:inherit;font-weight:600;padding:11px 18px;cursor:pointer;text-align:center;transition:.15s}
+.btn:hover{filter:brightness(1.07)}.btn:active{transform:scale(.97)}
+.btn.gray{background:var(--fill);color:var(--blue)}
+.btn.red{background:rgba(255,59,48,.12);color:var(--red)}
+.btn.small{padding:7px 12px;font-size:14px;border-radius:10px}
+.btn.full{width:100%}
+.btn:disabled{opacity:.55;cursor:default}
+.ic{border:0;background:var(--fill);border-radius:9px;width:32px;height:32px;cursor:pointer;font-size:14px}
+.ic.red{color:var(--red)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.row>input,.row>select{flex:1;margin:0;min-width:140px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.seg{display:flex;background:var(--fill);border-radius:12px;padding:3px;margin-bottom:14px;gap:2px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 6px;font:inherit;font-size:15px;cursor:pointer;color:var(--text)}
+.seg button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12);font-weight:600}
+.item{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .t{font-weight:600}
+.trow{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.trow:last-child{border-bottom:0}
+.tbody{flex:1;min-width:0}
+.tbody .tx{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;word-break:break-word}
+.acts{display:flex;gap:6px}
+.chip{display:inline-block;background:rgba(0,122,255,.1);color:var(--blue);border-radius:8px;padding:1px 8px;font-size:12px;margin-left:4px}
+.badge{display:inline-block;border-radius:8px;padding:2px 9px;font-size:12px;font-weight:600;margin-left:4px}
+.badge.g{background:rgba(52,199,89,.15);color:#1f9d42}
+.badge.o{background:rgba(255,149,0,.15);color:#c77700}
+.badge.r{background:rgba(255,59,48,.13);color:var(--red)}
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;width:calc(100% - 24px);max-width:600px;border-radius:18px;padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;z-index:30}
+details.card>summary,details.item>summary{cursor:pointer;list-style:none;font-weight:600}
+details>summary::-webkit-details-marker{display:none}
+details.card[open]>summary{margin-bottom:12px}
+.sum{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.score{font-weight:700;white-space:nowrap}
+.rv{border-radius:14px;padding:10px 12px;margin-top:8px;background:var(--fill)}
+.rv.ok{background:rgba(52,199,89,.1)}.rv.bad{background:rgba(255,59,48,.08)}
+.rvh{font-weight:600;font-size:13px;margin-bottom:2px}
+.rv.ok .rvh{color:#1f9d42}.rv.bad .rvh{color:var(--red)}
+.rvt{white-space:pre-wrap;word-break:break-word;margin-bottom:4px}
+.task .num{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.ttext{white-space:pre-wrap;word-break:break-word;margin-bottom:10px;font-size:17px}
+.timg,.thumb{max-width:100%;border-radius:12px;display:block;margin-bottom:10px}
+.thumb{max-height:60px;width:auto;margin:0}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{border:2px solid transparent;background:var(--fill);border-radius:12px;padding:11px 14px;font:inherit;text-align:left;cursor:pointer}
+.opt.on{border-color:var(--blue);background:rgba(0,122,255,.1);font-weight:600}
+.timer{position:fixed;top:68px;right:14px;z-index:25;border-radius:14px;padding:7px 14px;font-weight:700;font-variant-numeric:tabular-nums}
+.timer.low{color:var(--red)}
+.center{text-align:center}
+.big{font-size:54px;font-weight:700;letter-spacing:-1px;line-height:1.1}
+.auth{max-width:420px;margin:40px auto}
+.code{font-size:26px;font-weight:700;letter-spacing:3px;color:var(--blue)}
+.empty{text-align:center;color:var(--sub);padding:26px 0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{width:100%;max-width:440px;border-radius:22px;padding:20px;background:rgba(255,255,255,.9);max-height:92vh;overflow:auto}
+.toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:80;border-radius:14px;padding:10px 18px;font-size:15px;max-width:90%}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = ts => new Date(ts).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+
+async function api(url, method = 'GET', body) {
+  const r = await fetch(url, {method, headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined});
+  let d = {};
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok) { const e = new Error(d.error || 'Ошибка'); e.status = r.status; throw e; }
+  return d;
+}
+function toast(m) {
+  const t = document.createElement('div');
+  t.className = 'toast glass';
+  t.textContent = m;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+function modal(html) {
+  closeModal();
+  const o = document.createElement('div');
+  o.className = 'overlay'; o.id = 'modal';
+  o.innerHTML = '<div class="modal glass">' + html + '</div>';
+  o.onclick = e => { if (e.target === o) closeModal(); };
+  document.body.appendChild(o);
+}
+function closeModal() { const o = $('#modal'); if (o) o.remove(); }
+function handleErr(e) {
+  if (e.status === 401) { me = null; authPage(); } else toast(e.message);
+}
+
+let cfg = {}, me = null;
+let D = {tasks: [], homeworks: [], classes: []};
+let sel = new Set();
+
+function shell(html) {
+  $('#app').innerHTML =
+    '<div class="top glass"><div class="brand">📘 Домашка ФИПИ</div><div class="right">' +
+    (me ? '<span class="muted">' + esc(me.name) + ' · ' + (me.role === 'teacher' ? 'учитель' : 'ученик') + '</span><button class="btn small gray" onclick="logout()">Выйти</button>' : '') +
+    '</div></div><div class="wrap">' + html + '</div>';
+  window.scrollTo(0, 0);
+}
+async function logout() {
+  try { await api('/api/logout', 'POST'); } catch (e) {}
+  me = null; sel.clear(); location.href = '/';
+}
+
+async function boot() {
+  try { cfg = await api('/api/config'); } catch (e) {}
+  try { me = (await api('/api/me')).user; } catch (e) { me = null; }
+  route();
+}
+function route() {
+  const m = location.pathname.match(/^\/h\/([a-f0-9]+)/);
+  if (m) return hwPage(m[1]);
+  if (!me) return authPage();
+  if (me.role === 'teacher') teacherPage(); else studentPage();
+}
+
+/* ================= ВХОД / РЕГИСТРАЦИЯ ================= */
+let authMode = 'login', authRole = 'student';
+function authPage() {
+  const reg = authMode === 'reg';
+  shell(
+    '<div class="card glass auth">' +
+    '<h1 class="center">' + (reg ? 'Регистрация' : 'Вход') + '</h1>' +
+    '<p class="muted center" style="margin-top:0">Домашки из заданий ФИПИ с автопроверкой</p>' +
+    '<div class="seg"><button class="' + (!reg ? 'on' : '') + '" onclick="authMode=\'login\';authPage()">Войти</button>' +
+    '<button class="' + (reg ? 'on' : '') + '" onclick="authMode=\'reg\';authPage()">Зарегистрироваться</button></div>' +
+    (reg ? '<div class="seg"><button class="' + (authRole === 'student' ? 'on' : '') + '" onclick="authRole=\'student\';authPage()">Я ученик</button>' +
+      '<button class="' + (authRole === 'teacher' ? 'on' : '') + '" onclick="authRole=\'teacher\';authPage()">Я учитель</button></div>' +
+      '<input id="nm" placeholder="Ваше имя" autocomplete="name">' : '') +
+    '<input id="em" type="email" placeholder="Email" autocomplete="email">' +
+    '<input id="pw" type="password" placeholder="Пароль (минимум 6 символов)" autocomplete="' + (reg ? 'new-password' : 'current-password') + '" onkeydown="if(event.key===\'Enter\')doAuth()">' +
+    (reg && authRole === 'teacher' && cfg.inviteRequired ? '<input id="inv" placeholder="Код приглашения для учителей">' : '') +
+    '<button class="btn full" onclick="doAuth()">' + (reg ? 'Создать аккаунт' : 'Войти') + '</button></div>'
+  );
+}
+async function doAuth() {
+  try {
+    const body = {email: $('#em').value, password: $('#pw').value};
+    let r;
+    if (authMode === 'login') r = await api('/api/login', 'POST', body);
+    else {
+      body.name = $('#nm').value; body.role = authRole; body.invite = $('#inv') ? $('#inv').value : '';
+      r = await api('/api/register', 'POST', body);
+    }
+    me = r.user;
+    const back = sessionStorage.getItem('back');
+    if (back) { sessionStorage.removeItem('back'); location.href = back; return; }
+    route();
+  } catch (e) { toast(e.message); }
+}
+
+/* ================= ОБЩЕЕ: разбор ================= */
+function review(d, images) {
+  return d.map((x, i) =>
+    '<div class="rv ' + (x.ok ? 'ok' : 'bad') + '"><div class="rvh">' + (x.ok ? '✓' : '✕') + ' Задание ' + (i + 1) + '</div>' +
+    (images && images[i] ? '<img class="timg" src="' + images[i] + '" style="max-height:160px;width:auto">' : '') +
+    '<div class="rvt">' + esc(x.text) + '</div>' +
+    '<div class="small">Ответ: <b>' + esc(x.given || '—') + '</b>' + (x.ok ? '' : ' · Правильно: <b>' + esc(x.correct) + '</b>') + '</div></div>'
+  ).join('');
+}
+const pct = (s, t) => t ? Math.round(s / t * 100) : 0;
+const pcls = p => p >= 80 ? 'g' : p >= 50 ? 'o' : 'r';
+function flags(x) {
+  return (x.late ? '<span class="badge o">после срока</span>' : '') + (x.overtime ? '<span class="badge r">время вышло</span>' : '');
+}
+
+/* ================= УЧЕНИК ================= */
+let stTab = 'todo';
+async function studentPage() {
+  let d;
+  try { d = await api('/api/my'); } catch (e) { return handleErr(e); }
+  const tabs = [['todo', 'К выполнению (' + d.todo.length + ')'], ['done', 'Выполнено (' + d.done.length + ')'], ['cls', 'Классы']];
+  let body = '';
+  if (stTab === 'todo') {
+    body += '<div class="card glass"><h2>Открыть домашку</h2><div class="row"><input id="lnk" placeholder="Вставьте ссылку от учителя" onkeydown="if(event.key===\'Enter\')openLink()"><button class="btn" onclick="openLink()">Открыть</button></div></div>';
+    body += '<div class="card glass">' + (d.todo.length ? d.todo.map(h =>
+      '<div class="item"><div><div class="t">' + esc(h.title) + '</div><div class="muted small">' + h.count + ' заданий' +
+      (h.timeLimit ? ' · ⏱ ' + h.timeLimit + ' мин' : '') +
+      (h.deadline ? ' · <span style="color:' + (h.deadline < Date.now() ? 'var(--red)' : 'inherit') + '">до ' + fmt(h.deadline) + '</span>' : '') +
+      '</div></div><a class="btn small" href="/h/' + h.id + '">Решать</a></div>').join('')
+      : '<div class="empty">Невыполненных домашек нет 🎉<br><span class="small">Новые появятся здесь, когда вы откроете ссылку или вступите в класс</span></div>') + '</div>';
+  } else if (stTab === 'done') {
+    body += '<div class="card glass">' + (d.done.length ? d.done.map(s => {
+      const p = pct(s.score, s.total);
+      return '<details class="item" style="display:block"><summary class="sum"><div><div class="t">' + esc(s.title) + '</div><div class="muted small">' + fmt(s.date) + flags(s) + '</div></div>' +
+        '<div class="score"><span class="badge ' + pcls(p) + '">' + s.score + '/' + s.total + ' · ' + p + '%</span></div></summary>' +
+        '<div style="margin-top:8px">' + review(s.details) + '</div></details>';
+    }).join('') : '<div class="empty">Пока нет выполненных домашек</div>') + '</div>';
+  } else {
+    body += '<div class="card glass"><h2>Вступить в класс</h2><div class="row"><input id="ccode" placeholder="Код класса от учителя" style="text-transform:uppercase" onkeydown="if(event.key===\'Enter\')joinClass()"><button class="btn" onclick="joinClass()">Вступить</button></div>' +
+      '<div class="muted small">Домашки, выданные классу, сами появятся в «К выполнению»</div></div>';
+    body += '<div class="card glass">' + (d.classes.length ? d.classes.map(c =>
+      '<div class="item"><div class="t">' + esc(c.name) + '</div><button class="btn small red" onclick="leaveClass(\'' + c.id + '\')">Выйти</button></div>').join('')
+      : '<div class="empty">Вы пока не состоите в классах</div>') + '</div>';
+  }
+  shell('<div class="seg">' + tabs.map(t => '<button class="' + (stTab === t[0] ? 'on' : '') + '" onclick="stTab=\'' + t[0] + '\';studentPage()">' + t[1] + '</button>').join('') + '</div>' + body);
+}
+function openLink() {
+  const v = $('#lnk').value.trim();
+  const m = v.match(/\/h\/([a-f0-9]+)/) || v.match(/^([a-f0-9]{6,})$/);
+  if (!m) return toast('Не похоже на ссылку на домашку');
+  location.href = '/h/' + m[1];
+}
+async function joinClass() {
+  try { const r = await api('/api/classes/join', 'POST', {code: $('#ccode').value}); toast('Вы в классе «' + r.name + '»'); studentPage(); }
+  catch (e) { toast(e.message); }
+}
+async function leaveClass(id) {
+  if (!confirm('Выйти из класса?')) return;
+  try { await api('/api/classes/' + id + '/leave', 'POST'); studentPage(); } catch (e) { toast(e.message); }
+}
+
+/* ================= УЧИТЕЛЬ ================= */
+let tTab = 'tasks';
+async function teacherPage() {
+  try {
+    [D.tasks, D.homeworks, D.classes] = await Promise.all([api('/api/tasks'), api('/api/homeworks'), api('/api/classes')]);
+  } catch (e) { return handleErr(e); }
+  renderTeacher();
+}
+function renderTeacher() {
+  const tabs = [['tasks', 'Задания'], ['build', 'Быстрый вариант'], ['hw', 'Домашки'], ['cls', 'Классы']];
+  shell('<div class="seg">' + tabs.map(t => '<button class="' + (tTab === t[0] ? 'on' : '') + '" onclick="tTab=\'' + t[0] + '\';renderTeacher()">' + t[1] + '</button>').join('') + '</div><div id="tabbody"></div>');
+  if (tTab === 'tasks') tTasks(); else if (tTab === 'build') tBuild(); else if (tTab === 'hw') tHw(); else tClasses();
+}
+
+/* ---------- Задания ---------- */
+let editId = null, formImage = '';
+function readImage(file) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 900 / Math.max(img.width, img.height));
+        const w = Math.round(img.width * k), h = Math.round(img.height * k);
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = rej; img.src = fr.result;
+    };
+    fr.onerror = rej; fr.readAsDataURL(file);
+  });
+}
+async function setImage(file) {
+  try { formImage = await readImage(file); showPrev(); } catch (e) { toast('Не удалось загрузить картинку'); }
+}
+function showPrev() {
+  const el = $('#f_prev'); if (!el) return;
+  el.innerHTML = formImage ? '<img class="thumb" src="' + formImage + '"> <button class="ic" onclick="formImage=\'\';showPrev()">✕</button>' : '';
+}
+document.addEventListener('paste', e => {
+  if (!$('#f_img') || !e.clipboardData) return;
+  const it = [...e.clipboardData.items].find(i => i.type.indexOf('image/') === 0);
+  if (it) { e.preventDefault(); setImage(it.getAsFile()); }
+});
+
+function tTasks() {
+  editId = null; formImage = '';
+  $('#tabbody').innerHTML =
+    '<div class="card glass"><h2 id="ftitle">Новое задание</h2>' +
+    '<textarea id="f_text" rows="3" placeholder="Условие задания"></textarea>' +
+    '<div class="grid2"><input id="f_ans" placeholder="Ответ (можно несколько через |)"><input id="f_topic" placeholder="Тема или № задания (необязательно)"></div>' +
+    '<input id="f_opts" placeholder="Варианты ответа через ; (необязательно — ученик выберет кнопкой)">' +
+    '<div class="row"><label class="btn gray small">🖼 Картинка<input type="file" accept="image/*" id="f_img" hidden></label><span class="muted small">или вставьте скриншот через Ctrl+V</span><span id="f_prev"></span></div>' +
+    '<div class="row"><button class="btn" id="f_save" onclick="saveTask()">Добавить</button><button class="btn gray" id="f_cancel" style="display:none" onclick="tTasks()">Отмена</button></div></div>' +
+    '<details class="card glass"><summary>Импорт списком</summary>' +
+    '<p class="muted small" style="margin-top:0">Одно задание на строке: <b>условие ; ответ ; тема</b>. Тему можно не писать. Из Excel можно просто скопировать две колонки и вставить сюда.</p>' +
+    '<textarea id="b_text" rows="5" placeholder="Сколько будет 2+2? ; 4 ; Арифметика"></textarea>' +
+    '<input id="b_topic" placeholder="Общая тема для всех (необязательно)"><button class="btn" onclick="bulkAdd()">Импортировать</button></details>' +
+    '<div class="card glass"><div class="row"><input id="q" placeholder="Поиск по заданиям" oninput="renderTList()"><select id="qt" onchange="renderTList()"></select></div>' +
+    '<div class="row"><button class="btn small gray" onclick="selVisible()">Выбрать все найденные</button><span class="muted small" id="tcount"></span></div>' +
+    '<div id="tlist"></div></div><div id="bar"></div>';
+  $('#f_img').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
+  renderTopics(); renderTList(); updateBar();
+}
+function renderTopics() {
+  const s = $('#qt'); if (!s) return;
+  const v = s.value;
+  const tp = [...new Set(D.tasks.map(t => t.topic).filter(Boolean))].sort();
+  s.innerHTML = '<option value="">Все темы</option>' + tp.map(x => '<option value="' + esc(x) + '"' + (x === v ? ' selected' : '') + '>' + esc(x) + '</option>').join('');
+}
+function filtered() {
+  const q = ($('#q') ? $('#q').value : '').trim().toLowerCase(), tp = $('#qt') ? $('#qt').value : '';
+  return D.tasks.filter(t => (!tp || t.topic === tp) && (!q || (t.text + ' ' + t.answer + ' ' + (t.topic || '')).toLowerCase().indexOf(q) >= 0));
+}
+function renderTList() {
+  const l = filtered();
+  $('#tcount').textContent = 'Всего заданий: ' + D.tasks.length;
+  $('#tlist').innerHTML = l.length ? l.map(t =>
+    '<div class="trow"><input type="checkbox" ' + (sel.has(t.id) ? 'checked' : '') + ' onchange="toggleSel(\'' + t.id + '\',this.checked)">' +
+    '<div class="tbody"><div class="tx">' + esc(t.text || '[задание с картинкой]') + '</div><div class="muted small">Ответ: ' + esc(t.answer) +
+    (t.topic ? '<span class="chip">' + esc(t.topic) + '</span>' : '') + (t.image ? ' 🖼' : '') + (t.options && t.options.length ? ' ☰ варианты' : '') + '</div></div>' +
+    '<div class="acts"><button class="ic" onclick="editTask(\'' + t.id + '\')">✎</button><button class="ic red" onclick="delTask(\'' + t.id + '\')">🗑</button></div></div>'
+  ).join('') : '<div class="empty">Заданий нет. Добавьте первое выше 👆</div>';
+}
+function toggleSel(id, on) { if (on) sel.add(id); else sel.delete(id); updateBar(); }
+function selVisible() { filtered().forEach(t => sel.add(t.id)); renderTList(); updateBar(); }
+function updateBar() {
+  const b = $('#bar'); if (!b) return;
+  b.innerHTML = sel.size ? '<div class="bar glass"><b>Выбрано: ' + sel.size + '</b><div class="row" style="margin:0"><button class="btn small gray" onclick="sel.clear();renderTList();updateBar()">Сбросить</button><button class="btn small" onclick="hwModal()">Создать домашку</button></div></div>' : '';
+}
+async function saveTask() {
+  const b = {text: $('#f_text').value, answer: $('#f_ans').value, topic: $('#f_topic').value,
+    options: $('#f_opts').value.split(';').map(s => s.trim()).filter(Boolean), image: formImage};
+  try {
+    if (editId) {
+      const t = await api('/api/tasks/' + editId, 'PUT', b);
+      const i = D.tasks.findIndex(x => x.id === editId); if (i >= 0) D.tasks[i] = t;
+      toast('Сохранено');
+    } else {
+      D.tasks.unshift(await api('/api/tasks', 'POST', b));
+      toast('Добавлено');
+    }
+    const keep = $('#q').value;
+    tTasks(); $('#q').value = keep; renderTList();
+  } catch (e) { handleErr(e); }
+}
+function editTask(id) {
+  const t = D.tasks.find(x => x.id === id); if (!t) return;
+  editId = id; formImage = t.image || '';
+  $('#f_text').value = t.text; $('#f_ans').value = t.answer; $('#f_topic').value = t.topic || '';
+  $('#f_opts').value = (t.options || []).join('; ');
+  $('#ftitle').textContent = 'Редактирование задания';
+  $('#f_save').textContent = 'Сохранить'; $('#f_cancel').style.display = '';
+  showPrev(); window.scrollTo({top: 0, behavior: 'smooth'});
+}
+async function delTask(id) {
+  if (!confirm('Удалить задание? В уже выданных домашках оно останется.')) return;
+  try { await api('/api/tasks/' + id, 'DELETE'); D.tasks = D.tasks.filter(t => t.id !== id); sel.delete(id); renderTopics(); renderTList(); updateBar(); }
+  catch (e) { handleErr(e); }
+}
+async function bulkAdd() {
+  try {
+    const r = await api('/api/tasks/bulk', 'POST', {text: $('#b_text').value, topic: $('#b_topic').value});
+    toast('Добавлено: ' + r.added + (r.bad ? ', пропущено строк: ' + r.bad : ''));
+    D.tasks = await api('/api/tasks');
+    $('#b_text').value = ''; renderTopics(); renderTList();
+  } catch (e) { handleErr(e); }
+}
+function hwModal() {
+  modal('<h2>Новая домашка</h2><p class="muted" style="margin-top:-6px">Заданий: ' + sel.size + '</p>' +
+    '<input id="m_title" placeholder="Название (например, Дроби, 7 класс)">' +
+    '<div class="lbl">Кому выдать</div><select id="m_class"><option value="">Всем, у кого есть ссылка</option>' +
+    D.classes.map(c => '<option value="' + c.id + '">Класс: ' + esc(c.name) + '</option>').join('') + '</select>' +
+    '<div class="lbl">Срок сдачи (необязательно)</div><input type="datetime-local" id="m_dl">' +
+    '<div class="lbl">Ограничение по времени, минут (0 — без ограничения)</div><input type="number" id="m_tl" min="0" max="300" value="0">' +
+    '<div class="row"><button class="btn" onclick="createHw()">Создать</button><button class="btn gray" onclick="closeModal()">Отмена</button></div>');
+}
+async function createHw() {
+  const dl = $('#m_dl').value ? new Date($('#m_dl').value).getTime() : null;
+  try {
+    await api('/api/homeworks', 'POST', {
+      title: $('#m_title').value, classId: $('#m_class').value || null, deadline: dl, timeLimit: $('#m_tl').value,
+      taskIds: D.tasks.filter(t => sel.has(t.id)).map(t => t.id)
+    });
+    sel.clear(); closeModal();
+    D.homeworks = await api('/api/homeworks');
+    tTab = 'hw'; renderTeacher(); toast('Домашка создана — скопируйте ссылку');
+  } catch (e) { toast(e.message); }
+}
+
+/* ---------- Быстрый вариант ---------- */
+let B = [];
+const newRow = () => ({img: '', text: '', ans: '', opts: ''});
+function freeRow() {
+  let r = B.find(x => !x.img && !x.text.trim());
+  if (!r) { r = newRow(); B.push(r); }
+  return r;
+}
+function tBuild() {
+  if (!B.length) B = [newRow()];
+  $('#tabbody').innerHTML =
+    '<div class="card glass"><h2>Быстрый вариант</h2>' +
+    '<p class="muted small" style="margin-top:0">Для ЕГЭ и ОГЭ: нажмите «12 заданий» или «19 заданий». Скопируйте скриншот (Win+Shift+S) и нажмите <b>Ctrl+V</b> — картинка встанет в первое пустое задание. Условие писать не нужно, если оно на картинке.</p>' +
+    '<input id="b_title" placeholder="Название (например, ЕГЭ профиль, вариант 1)">' +
+    '<div class="row"><button class="btn small gray" onclick="addRows(1)">+ задание</button>' +
+    '<button class="btn small gray" onclick="addRows(12)">12 заданий</button>' +
+    '<button class="btn small gray" onclick="addRows(19)">19 заданий</button>' +
+    '<label class="btn small gray">🖼 Несколько картинок<input type="file" accept="image/*" multiple hidden onchange="manyFiles(this)"></label>' +
+    '<button class="btn small red" onclick="if(confirm(\'Очистить всё?\')){B=[];tBuild()}">Очистить</button></div></div>' +
+    '<div id="brows"></div>' +
+    '<div class="card glass"><div class="lbl">Кому выдать</div><select id="b_class"><option value="">Всем, у кого есть ссылка</option>' +
+    D.classes.map(c => '<option value="' + c.id + '">Класс: ' + esc(c.name) + '</option>').join('') + '</select>' +
+    '<div class="lbl">Срок сдачи (необязательно)</div><input type="datetime-local" id="b_dl">' +
+    '<div class="lbl">Ограничение по времени, минут (0 — без ограничения)</div><input type="number" id="b_tl" min="0" max="300" value="0">' +
+    '<button class="btn full" id="b_go" onclick="createBuild()">Создать домашку</button></div>';
+  renderRows();
+}
+function addRows(n) {
+  if (n === 1) B.push(newRow());
+  else while (B.length < n) B.push(newRow());
+  renderRows();
+}
+function renderRows() {
+  const box = $('#brows'); if (!box) return;
+  box.innerHTML = B.map((r, i) =>
+    '<div class="card glass"><div class="sum"><b>Задание ' + (i + 1) + '</b><button class="ic red" onclick="B.splice(' + i + ',1);renderRows()">✕</button></div>' +
+    '<div class="row" style="margin-top:8px"><label class="btn gray small">🖼 Картинка<input type="file" accept="image/*" hidden onchange="rowFile(' + i + ',this)"></label>' +
+    (r.img ? '<img class="thumb" src="' + r.img + '" style="max-height:90px"><button class="ic" onclick="B[' + i + '].img=\'\';renderRows()">✕</button>' : '<span class="muted small">или Ctrl+V</span>') + '</div>' +
+    '<textarea rows="2" placeholder="Условие (можно не писать, если есть картинка)" oninput="B[' + i + '].text=this.value">' + esc(r.text) + '</textarea>' +
+    '<div class="grid2"><input placeholder="Ответ (можно несколько через |)" value="' + esc(r.ans) + '" oninput="B[' + i + '].ans=this.value">' +
+    '<input placeholder="Варианты через ; (необязательно)" value="' + esc(r.opts) + '" oninput="B[' + i + '].opts=this.value"></div></div>'
+  ).join('');
+}
+async function rowFile(i, inp) {
+  const f = inp.files[0]; if (!f) return;
+  try { B[i].img = await readImage(f); renderRows(); } catch (e) { toast('Не удалось загрузить картинку'); }
+}
+async function manyFiles(inp) {
+  for (const f of inp.files) { try { freeRow().img = await readImage(f); } catch (e) {} }
+  inp.value = ''; renderRows();
+}
+document.addEventListener('paste', async e => {
+  if (!$('#brows') || !e.clipboardData) return;
+  const it = [...e.clipboardData.items].find(i => i.type.indexOf('image/') === 0);
+  if (!it) return;
+  e.preventDefault();
+  try { freeRow().img = await readImage(it.getAsFile()); renderRows(); } catch (err) { toast('Не удалось загрузить картинку'); }
+});
+async function createBuild() {
+  let last = -1;
+  B.forEach((r, i) => { if (r.img || r.text.trim() || r.ans.trim() || r.opts.trim()) last = i; });
+  if (last < 0) return toast('Добавьте хотя бы одно задание');
+  const list = [];
+  for (let i = 0; i <= last; i++) {
+    const r = B[i];
+    if (!r.img && !r.text.trim()) return toast('Задание ' + (i + 1) + ': нужна картинка или условие');
+    if (!r.ans.trim()) return toast('Задание ' + (i + 1) + ': впишите ответ');
+    list.push(r);
+  }
+  if (list.length > 100) return toast('Максимум 100 заданий в одной домашке');
+  const title = $('#b_title').value.trim() || 'Вариант';
+  const dl = $('#b_dl').value ? new Date($('#b_dl').value).getTime() : null;
+  const btn = $('#b_go'); btn.disabled = true; btn.textContent = 'Создаю…';
+  try {
+    const ids = [];
+    for (const r of list) {
+      const t = await api('/api/tasks', 'POST', {
+        text: r.text, answer: r.ans, topic: title.slice(0, 40),
+        options: r.opts.split(';').map(s => s.trim()).filter(Boolean), image: r.img
+      });
+      D.tasks.unshift(t); ids.push(t.id);
+    }
+    await api('/api/homeworks', 'POST', {title, classId: $('#b_class').value || null, deadline: dl, timeLimit: $('#b_tl').value, taskIds: ids});
+    B = [];
+    D.homeworks = await api('/api/homeworks');
+    tTab = 'hw'; renderTeacher(); toast('Домашка создана — скопируйте ссылку');
+  } catch (e) { btn.disabled = false; btn.textContent = 'Создать домашку'; handleErr(e); }
+}
+
+/* ---------- Домашки ---------- */
+function tHw() {
+  $('#tabbody').innerHTML = D.homeworks.length ? D.homeworks.map(h =>
+    '<div class="card glass"><div class="t" style="font-weight:600;font-size:18px">' + esc(h.title) + '</div>' +
+    '<div class="muted small" style="margin:3px 0 12px">' + h.count + ' заданий · сдали: ' + h.submitted +
+    (h.className ? ' · класс «' + esc(h.className) + '»' : '') +
+    (h.timeLimit ? ' · ⏱ ' + h.timeLimit + ' мин' : '') +
+    (h.deadline ? ' · срок до ' + fmt(h.deadline) : '') + '</div>' +
+    '<div class="row" style="margin:0"><button class="btn small" onclick="copyLink(\'' + h.id + '\')">Копировать ссылку</button>' +
+    '<a class="btn small gray" target="_blank" href="/h/' + h.id + '">Предпросмотр</a>' +
+    '<button class="btn small gray" onclick="showResults(\'' + h.id + '\')">Результаты</button>' +
+    '<button class="btn small red" onclick="delHw(\'' + h.id + '\')">Удалить</button></div></div>'
+  ).join('') : '<div class="card glass empty">Домашек пока нет.<br>Откройте «Быстрый вариант» или отметьте задания галочками.</div>';
+}
+function copyLink(id) {
+  const link = location.origin + '/h/' + id;
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(link).then(() => toast('Ссылка скопирована'), () => prompt('Скопируйте ссылку:', link));
+  else prompt('Скопируйте ссылку (Ctrl+C):', link);
+}
+async function delHw(id) {
+  if (!confirm('Удалить домашку? Ссылка перестанет работать. Результаты останутся в истории учеников.')) return;
+  try { await api('/api/homeworks/' + id, 'DELETE'); D.homeworks = D.homeworks.filter(h => h.id !== id); tHw(); } catch (e) { handleErr(e); }
+}
+async function showResults(id) {
+  let r;
+  try { r = await api('/api/homeworks/' + id + '/results'); } catch (e) { return handleErr(e); }
+  let hard = '';
+  if (r.results.length) {
+    const n = r.taskTexts.length;
+    const arr = [];
+    for (let i = 0; i < n; i++) {
+      const ok = r.results.filter(x => x.details[i] && x.details[i].ok).length;
+      arr.push({i, p: Math.round(ok / r.results.length * 100)});
+    }
+    arr.sort((a, b) => a.p - b.p);
+    hard = '<div class="card glass"><h2>Процент верных по заданиям</h2>' + arr.map(a =>
+      '<div class="item"><div style="min-width:0">' +
+      (r.taskImages && r.taskImages[a.i] ? '<img class="thumb" src="' + r.taskImages[a.i] + '" style="margin-bottom:6px">' : '') +
+      '<div class="small muted">Задание ' + (a.i + 1) + '</div><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px">' + esc(r.taskTexts[a.i]) + '</div></div><span class="badge ' + pcls(a.p) + '">' + a.p + '%</span></div>').join('') + '</div>';
+  }
+  $('#tabbody').innerHTML =
+    '<button class="btn small gray" style="margin-bottom:12px" onclick="renderTeacher()">← Назад</button>' +
+    '<div class="card glass"><h2>' + esc(r.title) + '</h2><div class="muted" style="margin-bottom:10px">Сдали: ' + r.results.length + ' · средний результат: ' + r.avg + '%</div>' +
+    (r.results.length ? '<a class="btn small gray" href="/api/homeworks/' + id + '/export">⬇ Скачать для Excel</a>' : '') + '</div>' +
+    (r.missing.length ? '<div class="card glass"><h2>Не сдали</h2><div>' + r.missing.map(esc).join(', ') + '</div></div>' : '') +
+    (r.results.length ? r.results.map(s => {
+      const p = pct(s.score, s.total);
+      return '<details class="card glass"><summary class="sum"><div><b>' + esc(s.name) + '</b>' + (s.registered ? '' : ' <span class="muted small">(гость)</span>') +
+        '<div class="muted small" style="font-weight:400">' + fmt(s.date) + flags(s) + '</div></div>' +
+        '<span class="badge ' + pcls(p) + '">' + s.score + '/' + s.total + ' · ' + p + '%</span></summary>' +
+        review(s.details, r.taskImages) +
+        '<div style="margin-top:12px"><button class="btn small red" onclick="resetSub(\'' + s.id + '\',\'' + id + '\')">Сбросить попытку</button></div></details>';
+    }).join('') : '<div class="card glass empty">Пока никто не сдал</div>') + hard;
+}
+async function resetSub(sid, hid) {
+  if (!confirm('Удалить результат, чтобы ученик мог пройти домашку заново?')) return;
+  try { await api('/api/submissions/' + sid, 'DELETE'); showResults(hid); toast('Попытка сброшена'); } catch (e) { handleErr(e); }
+}
+
+/* ---------- Классы ---------- */
+function tClasses() {
+  $('#tabbody').innerHTML =
+    '<div class="card glass"><h2>Новый класс</h2><div class="row"><input id="cn" placeholder="Например, 9Б" onkeydown="if(event.key===\'Enter\')addClass()"><button class="btn" onclick="addClass()">Создать</button></div>' +
+    '<div class="muted small">Ученики вводят код класса в своём кабинете, и домашки для класса появляются у них сами.</div></div>' +
+    (D.classes.length ? D.classes.map(c =>
+      '<div class="card glass"><div class="sum"><h2 style="margin:0">' + esc(c.name) + '</h2><button class="btn small red" onclick="delClass(\'' + c.id + '\')">Удалить класс</button></div>' +
+      '<div class="lbl" style="margin-top:10px">Код для учеников</div><div class="code">' + esc(c.code) + '</div>' +
+      '<div class="lbl" style="margin-top:12px">Ученики (' + c.students.length + ')</div>' +
+      (c.students.length ? c.students.map(s =>
+        '<div class="item"><div>' + esc(s.name) + ' <span class="muted small">' + esc(s.email) + '</span></div><button class="ic red" onclick="rmStudent(\'' + c.id + '\',\'' + s.id + '\')">✕</button></div>').join('')
+        : '<div class="muted small">Пока никого</div>') + '</div>'
+    ).join('') : '<div class="card glass empty">Классов пока нет</div>');
+}
+async function reloadClasses() { D.classes = await api('/api/classes'); tClasses(); }
+async function addClass() {
+  try { await api('/api/classes', 'POST', {name: $('#cn').value}); await reloadClasses(); } catch (e) { handleErr(e); }
+}
+async function delClass(id) {
+  if (!confirm('Удалить класс? Домашки останутся доступными по ссылке.')) return;
+  try { await api('/api/classes/' + id, 'DELETE'); await reloadClasses(); } catch (e) { handleErr(e); }
+}
+async function rmStudent(cid, sid) {
+  if (!confirm('Убрать ученика из класса?')) return;
+  try { await api('/api/classes/' + cid + '/students/' + sid, 'DELETE'); await reloadClasses(); } catch (e) { handleErr(e); }
+}
+
+/* ================= СТРАНИЦА ДОМАШКИ ================= */
+let H = null, T = [], ans = {}, endAt = 0, timerId = null, submitted = false;
+async function hwPage(id) {
+  shell('<div class="card glass empty">Загрузка…</div>');
+  ans = {}; submitted = false;
+  try { H = await api('/api/hw/' + id); }
+  catch (e) { shell('<div class="card glass center"><h2>Упс</h2><p>' + esc(e.message) + '</p><a class="btn" href="/">На главную</a></div>'); return; }
+  renderHw();
+}
+function resultCard(r) {
+  const p = pct(r.score, r.total);
+  return '<div class="card glass center"><div class="muted">Ваш результат</div><div class="big" style="color:var(--' + (p >= 80 ? 'green' : p >= 50 ? 'orange' : 'red') + ')">' + r.score + ' из ' + r.total + '</div>' +
+    '<div class="muted">' + p + '% · ' + fmt(r.date) + flags(r) + '</div>' +
+    (H.role === 'guest' ? '<p class="muted small">Вы не вошли, поэтому результат нигде не сохранён. <a href="#" onclick="goLogin();return false">Войти</a></p>' : '') +
+    '<div style="margin-top:14px"><a class="btn" href="/">' + (me ? 'В кабинет' : 'На главную') + '</a></div></div>' +
+    '<div class="card glass"><h2>Разбор</h2>' + review(r.details) + '</div>';
+}
+function goLogin() { sessionStorage.setItem('back', location.pathname); location.href = '/'; }
+function renderHw() {
+  if (timerId) { clearInterval(timerId); timerId = null; }
+  const head = '<div class="card glass"><a class="muted small" href="/">← ' + (me ? 'В кабинет' : 'На главную') + '</a><h1>' + esc(H.title) + '</h1>' +
+    '<div class="muted">' + H.count + ' заданий' + (H.timeLimit ? ' · ⏱ ' + H.timeLimit + ' мин' : '') + (H.deadline ? ' · срок до ' + fmt(H.deadline) : '') + '</div></div>';
+  if (H.mine) return shell(head + resultCard(H.mine));
+  const guestNote = H.role === 'guest' ?
+    '<div class="card glass"><b>Вы не вошли в аккаунт.</b><div class="muted small" style="margin:3px 0 10px">Можно решать как гость, но результат не сохранится в кабинете.</div><button class="btn small" onclick="goLogin()">Войти или зарегистрироваться</button></div>' : '';
+  if (H.needStart) {
+    return shell(head + guestNote + '<div class="card glass center"><p>На выполнение даётся <b>' + H.timeLimit + ' мин</b>. Таймер начнётся после нажатия кнопки и не останавливается, даже если закрыть страницу.</p><button class="btn" onclick="startHw()">Начать</button></div>');
+  }
+  T = H.tasks;
+  const teacher = H.role === 'teacher';
+  shell(head +
+    (teacher ? '<div class="card glass"><b>Предпросмотр.</b> <span class="muted">Так задания видят ученики. Ответы здесь не сохраняются.</span></div>' : guestNote) +
+    (H.timeLimit && !teacher ? '<div class="timer glass" id="timer">⏱ --:--</div>' : '') +
+    T.map((t, k) =>
+      '<div class="card glass task"><div class="num">Задание ' + (k + 1) + '</div><div class="ttext">' + esc(t.text) + '</div>' +
+      (t.image ? '<img class="timg" src="' + t.image + '">' : '') +
+      (t.options && t.options.length ?
+        '<div class="opts">' + t.options.map((o, i) => '<button class="opt" data-k="' + k + '" onclick="pick(' + k + ',' + i + ')">' + esc(o) + '</button>').join('') + '</div>' :
+        '<input placeholder="Ваш ответ" autocomplete="off" oninput="ans[T[' + k + '].id]=this.value">') + '</div>'
+    ).join('') +
+    (teacher ? '' : '<div class="card glass">' +
+      (H.role === 'guest' ? '<input id="gname" placeholder="Ваше имя">' : '') +
+      '<button class="btn full" onclick="submitHw()">Сдать</button></div>'));
+  if (H.timeLimit && !teacher) {
+    endAt = Date.now() + (H.timeLeft != null ? H.timeLeft : H.timeLimit * 60) * 1000;
+    tick(); timerId = setInterval(tick, 500);
+  }
+}
+function pick(k, i) {
+  ans[T[k].id] = T[k].options[i];
+  document.querySelectorAll('.opt[data-k="' + k + '"]').forEach((b, j) => b.classList.toggle('on', j === i));
+}
+function tick() {
+  const left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+  const el = $('#timer');
+  if (el) { el.textContent = '⏱ ' + String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0'); el.classList.toggle('low', left <= 60); }
+  if (left <= 0) { clearInterval(timerId); timerId = null; toast('Время вышло — ответы отправлены'); submitHw(true); }
+}
+async function startHw() {
+  try {
+    const r = await api('/api/hw/' + H.id + '/start', 'POST');
+    H.tasks = r.tasks; H.timeLeft = r.timeLeft; H.needStart = false; renderHw();
+  } catch (e) { toast(e.message); }
+}
+async function submitHw(force) {
+  if (submitted) return;
+  const empty = T.filter(t => !String(ans[t.id] || '').trim()).length;
+  if (!force && empty && !confirm('Заданий без ответа: ' + empty + '. Всё равно сдать?')) return;
+  let name = '';
+  if (H.role === 'guest') {
+    name = $('#gname') ? $('#gname').value.trim() : '';
+    if (!name && !force) return toast('Введите ваше имя');
+    if (!name) name = 'Гость';
+  }
+  submitted = true;
+  try {
+    const r = await api('/api/hw/' + H.id + '/submit', 'POST', {answers: ans, name});
+    H.mine = r; renderHw();
+  } catch (e) { submitted = false; toast(e.message); }
+}
+
+boot();
+</script>
+</body>
+</html>
+```
