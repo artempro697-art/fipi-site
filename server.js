@@ -1,5 +1,4 @@
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
-
 const PORT = process.env.PORT || 3000;
 const INVITE = process.env.INVITE_CODE || '';
 const ADMIN_KEY = process.env.ADMIN_KEY || '';
