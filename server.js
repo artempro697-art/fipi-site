@@ -1,405 +1,511 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
-const SB = process.env.SUPABASE_URL;
-const KEY = process.env.SUPABASE_KEY;
 const INVITE = process.env.INVITE_CODE || '';
+const ADMIN_KEY = process.env.ADMIN_KEY || '';
+const FREE_LIMIT = 20; // сколько первых учителей получают бесплатный доступ
+const SB_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+const SB_KEY = (process.env.SUPABASE_KEY || '').trim();
+const USE_SB = !!(SB_URL && SB_KEY);
+const FILE = path.join(process.env.DATA_DIR || __dirname, 'data.json');
+const KEYS = ['users', 'sessions', 'tasks', 'homeworks', 'submissions', 'classes', 'starts', 'requests'];
+const DEF = { users: [], sessions: {}, tasks: [], homeworks: [], submissions: [], classes: [], starts: {}, requests: [] };
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
-const AH = { apikey: KEY, Authorization: 'Bearer ' + KEY };
+let db = {};
+const dirty = new Set();
+let timer = null;
 
-function send(res, code, body, type, headers) {
-  res.writeHead(code, Object.assign({ 'Content-Type': type || 'text/plain; charset=utf-8' }, headers || {}));
-  res.end(body);
+/* ---------- хранилище ---------- */
+function sbHeaders(extra) {
+  const h = Object.assign({ apikey: SB_KEY }, extra || {});
+  if (SB_KEY.startsWith('eyJ')) h.Authorization = 'Bearer ' + SB_KEY;
+  return h;
 }
-const json = (res, code, obj, h) => send(res, code, JSON.stringify(obj), 'application/json; charset=utf-8', h);
-const err = (res, code, msg) => json(res, code, { error: msg });
+async function sbReq(p, opt) {
+  opt = opt || {};
+  const r = await fetch(SB_URL + '/rest/v1/' + p, Object.assign({}, opt, { headers: sbHeaders(opt.headers) }));
+  if (!r.ok) throw new Error('Supabase ' + r.status + ' ' + (await r.text()).slice(0, 200));
+  return r;
+}
+async function load() {
+  if (USE_SB) {
+    const r = await sbReq('kv?select=k,v&k=in.(' + KEYS.join(',') + ')');
+    for (const x of await r.json()) db[x.k] = x.v;
+  } else if (fs.existsSync(FILE)) {
+    try { db = JSON.parse(fs.readFileSync(FILE, 'utf8')); }
+    catch (e) { console.error('data.json повреждён'); process.exit(1); }
+  }
+  for (const k of KEYS) if (db[k] === undefined) db[k] = JSON.parse(JSON.stringify(DEF[k]));
+  if (!USE_SB && !db.images) db.images = {};
+}
+function save(...ks) {
+  ks.forEach(k => dirty.add(k));
+  if (!timer) timer = setTimeout(flush, 300);
+}
+async function flush() {
+  timer = null;
+  const ks = [...dirty]; dirty.clear();
+  try {
+    if (USE_SB) {
+      await sbReq('kv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(ks.map(k => ({ k, v: db[k] })))
+      });
+    } else {
+      const tmp = FILE + '.tmp';
+      fs.writeFileSync(tmp, JSON.stringify(db));
+      fs.renameSync(tmp, FILE);
+    }
+  } catch (e) {
+    console.error('Ошибка сохранения:', e.message);
+    ks.forEach(k => dirty.add(k));
+    timer = setTimeout(flush, 5000);
+  }
+}
 
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let d = '';
-    req.on('data', c => { d += c; if (d.length > 5e6) req.destroy(); });
-    req.on('end', () => resolve(d));
-    req.on('error', reject);
-  });
+/* ---------- картинки ---------- */
+async function putImg(d) {
+  d = String(d || '');
+  if (/^\/img\/[a-f0-9]{40}$/.test(d)) return d;
+  if (!/^data:image\/(png|jpeg|jpg|webp|gif);base64,/.test(d) || d.length > 4e6) return '';
+  const h = crypto.createHash('sha1').update(d).digest('hex');
+  if (USE_SB) {
+    await sbReq('kv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ k: 'img:' + h, v: { d } }])
+    });
+  } else { db.images[h] = d; save('images'); }
+  return '/img/' + h;
+}
+async function getImg(h) {
+  if (USE_SB) {
+    const r = await sbReq('kv?select=v&k=eq.img:' + h);
+    const rows = await r.json();
+    return rows[0] && rows[0].v && rows[0].v.d;
+  }
+  return db.images[h];
 }
 
-async function kvGet(k) {
-  const r = await fetch(SB + '/rest/v1/kv?k=eq.' + encodeURIComponent(k) + '&select=v', { headers: AH });
-  if (!r.ok) throw new Error('DB GET ' + r.status);
-  const rows = await r.json();
-  return rows.length ? rows[0].v : null;
-}
-async function kvSet(k, v) {
-  const r = await fetch(SB + '/rest/v1/kv', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' }, AH), body: JSON.stringify([{ k: k, v: v }]) });
-  if (!r.ok) throw new Error('DB SET ' + r.status);
-}
-async function kvDel(k) {
-  await fetch(SB + '/rest/v1/kv?k=eq.' + encodeURIComponent(k), { method: 'DELETE', headers: AH });
-}
-const load = async (k, d) => { const v = await kvGet(k); return v == null ? d : v; };
-
-const nid = n => crypto.randomBytes(n).toString('hex');
-const norm = s => String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' ').replace(/,/g, '.');
-const hash = s => crypto.createHash('sha256').update(s).digest('hex');
-const pub = u => ({ id: u.id, name: u.name, email: u.email, role: u.role });
-const csvEsc = s => { s = String(s == null ? '' : s); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+/* ---------- утилиты ---------- */
+const rid = (n = 8) => crypto.randomBytes(n).toString('hex').slice(0, n);
+const str = (s, n) => String(s == null ? '' : s).trim().slice(0, n);
+const AL = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function genCode() {
-  const a = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  let s = '';
-  for (let i = 0; i < 6; i++) s += a[crypto.randomInt(a.length)];
-  return s;
+  let c;
+  do { c = ''; for (const x of crypto.randomBytes(6)) c += AL[x % AL.length]; }
+  while (db.classes.some(k => k.code === c));
+  return c;
 }
-function getCookie(req) {
-  const o = {};
-  (req.headers.cookie || '').split(';').forEach(p => { const i = p.indexOf('='); if (i > 0) o[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim()); });
-  return o.sid || '';
+const hashPw = (pw, salt) => crypto.scryptSync(pw, salt, 64).toString('hex');
+function send(res, code, obj, extra) {
+  res.writeHead(code, Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, extra || {}));
+  res.end(JSON.stringify(obj));
 }
-async function newSession(userId) {
-  const t = nid(24);
-  await kvSet('sess:' + t, { userId: userId });
-  return t;
-}
-const cookieHdr = t => ({ 'Set-Cookie': 'sid=' + t + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000' });
-function guestCookie(req) {
-  const t = getCookie(req);
-  if (t) return [t, null];
-  const nt = nid(24);
-  return [nt, cookieHdr(nt)];
-}
-async function getUser(req) {
-  const t = getCookie(req);
-  if (!t) return null;
-  const s = await kvGet('sess:' + t);
-  if (!s) return null;
-  const users = await load('users', []);
-  return users.find(u => u.id === s.userId) || null;
-}
-function makeSub(h, tlist, answers, user, startedAt, name) {
-  const details = tlist.map(t => {
-    const given = answers && answers[t.id] != null ? String(answers[t.id]) : '';
-    const ok = String(t.answer || '').split('|').map(norm).includes(norm(given));
-    return { ok: ok, text: t.text || '', given: given, correct: t.answer || '' };
+function readBody(req, limit = 30e6) {
+  return new Promise((ok, no) => {
+    let n = 0; const c = [];
+    req.on('data', d => { n += d.length; if (n > limit) { no(new Error('big')); req.destroy(); } else c.push(d); });
+    req.on('end', () => { try { ok(c.length ? JSON.parse(Buffer.concat(c).toString()) : {}); } catch (e) { no(new Error('bad')); } });
+    req.on('error', no);
   });
-  const now = Date.now();
+}
+function cookies(req) {
+  const o = {};
+  (req.headers.cookie || '').split(';').forEach(p => {
+    const i = p.indexOf('=');
+    if (i > 0) { try { o[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim()); } catch (e) {} }
+  });
+  return o;
+}
+function getUser(req) {
+  const sid = cookies(req).sid;
+  const s = sid && db.sessions[sid];
+  if (!s) return null;
+  if (s.exp < Date.now()) { delete db.sessions[sid]; save('sessions'); return null; }
+  return db.users.find(u => u.id === s.uid) || null;
+}
+function startSession(req, u) {
+  const sid = crypto.randomBytes(24).toString('hex');
+  db.sessions[sid] = { uid: u.id, exp: Date.now() + 30 * 864e5 };
+  save('sessions');
+  const sec = req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
+  return 'sid=' + sid + '; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000' + sec;
+}
+const active = u => u.role === 'teacher' && (u.plan === 'free' || (u.plan === 'pro' && (!u.proUntil || u.proUntil > Date.now())));
+const pub = u => ({ id: u.id, email: u.email, name: u.name, role: u.role, teacherCode: u.teacherCode || null, seq: u.seq || null, plan: u.plan || null, active: u.role === 'teacher' ? active(u) : true });
+const nameOf = id => { const u = db.users.find(x => x.id === id); return u ? u.name : '—'; };
+function stats() {
+  const t = db.users.filter(u => u.role === 'teacher').length;
+  const s = db.users.filter(u => u.role === 'student').length;
+  return { teachers: t, students: s, freeLimit: FREE_LIMIT, freeLeft: Math.max(0, FREE_LIMIT - t) };
+}
+const norm = s => String(s == null ? '' : s).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, '').replace(/,/g, '.');
+const isRight = (given, right) => { const g = norm(given); return g !== '' && String(right).split('|').some(v => norm(v) === g); };
+
+const fails = {};
+const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+
+/* ---------- регистрация / вход ---------- */
+function register(req, res, b) {
+  const email = str(b.email, 100).toLowerCase(), name = str(b.name, 40), pw = String(b.password || '');
+  const role = b.role === 'teacher' ? 'teacher' : b.role === 'student' ? 'student' : '';
+  if (!role) return send(res, 400, { error: 'Выберите роль' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return send(res, 400, { error: 'Укажите корректный email' });
+  if (name.length < 2) return send(res, 400, { error: 'Укажите имя (от 2 символов)' });
+  if (pw.length < 6) return send(res, 400, { error: 'Пароль — минимум 6 символов' });
+  if (db.users.some(u => u.email === email)) return send(res, 409, { error: 'Этот email уже зарегистрирован' });
+  if (role === 'teacher' && INVITE && b.invite !== INVITE) return send(res, 403, { error: 'Неверный код приглашения' });
+  const salt = crypto.randomBytes(16).toString('hex');
+  const u = { id: rid(10), email, name, role, salt, hash: hashPw(pw, salt), created: Date.now() };
+  if (role === 'teacher') {
+    const n = db.users.filter(x => x.role === 'teacher').length;
+    u.seq = n + 1;
+    u.plan = n < FREE_LIMIT ? 'free' : 'none';
+    u.teacherCode = genCode();
+    db.classes.push({ id: rid(), teacherId: u.id, name: 'Мои ученики', code: u.teacherCode, students: [], created: Date.now() });
+    save('classes');
+  }
+  db.users.push(u); save('users');
+  send(res, 200, { user: pub(u) }, { 'Set-Cookie': startSession(req, u) });
+}
+function login(req, res, b) {
+  const ip = ipOf(req), f = fails[ip];
+  if (f && f.until > Date.now()) return send(res, 429, { error: 'Слишком много попыток. Подождите 10 минут.' });
+  const u = db.users.find(x => x.email === str(b.email, 100).toLowerCase());
+  let ok = false;
+  if (u) {
+    const a = Buffer.from(hashPw(String(b.password || ''), u.salt), 'hex'), c = Buffer.from(u.hash, 'hex');
+    ok = a.length === c.length && crypto.timingSafeEqual(a, c);
+  }
+  if (!ok) {
+    const x = fails[ip] || (fails[ip] = { n: 0, until: 0 });
+    if (++x.n >= 10) { x.until = Date.now() + 600000; x.n = 0; }
+    return send(res, 401, { error: 'Неверный email или пароль' });
+  }
+  delete fails[ip];
+  send(res, 200, { user: pub(u) }, { 'Set-Cookie': startSession(req, u) });
+}
+
+/* ---------- админ ---------- */
+function admin(res, p, url) {
+  if (!ADMIN_KEY || url.searchParams.get('key') !== ADMIN_KEY) return send(res, 403, { error: 'Нет доступа' });
+  if (p === '/api/admin/stats') {
+    return send(res, 200, {
+      stats: stats(),
+      teachers: db.users.filter(u => u.role === 'teacher').map(u => ({ email: u.email, name: u.name, seq: u.seq, plan: u.plan, proUntil: u.proUntil || 0, created: u.created })),
+      requests: db.requests
+    });
+  }
+  const u = db.users.find(x => x.email === String(url.searchParams.get('email') || '').toLowerCase() && x.role === 'teacher');
+  if (!u) return send(res, 404, { error: 'Учитель с таким email не найден' });
+  if (p === '/api/admin/grant') {
+    const days = parseInt(url.searchParams.get('days') || '30', 10);
+    u.plan = 'pro'; u.proUntil = days > 0 ? Date.now() + days * 864e5 : 0;
+    save('users');
+    return send(res, 200, { ok: true, email: u.email, plan: u.plan, proUntil: u.proUntil });
+  }
+  if (p === '/api/admin/revoke') {
+    u.plan = 'none'; save('users');
+    return send(res, 200, { ok: true, email: u.email, plan: u.plan });
+  }
+  send(res, 404, { error: 'Нет такого действия' });
+}
+
+/* ---------- страница домашки (открыта и гостям) ---------- */
+function resultOf(s) { return { score: s.score, maxScore: s.maxScore, date: s.date, details: s.details }; }
+async function hwRoute(req, res, id, act, b, user) {
+  const hw = db.homeworks.find(h => h.id === id);
+  if (!hw) return send(res, 404, { error: 'Домашка не найдена' });
+  const tasks = hw.items.map((x, i) => ({ i, text: x.text, img: x.img, auto: !!x.answer }));
+  if (!act && req.method === 'GET') {
+    const out = {
+      homework: { id: hw.id, title: hw.title, timeLimit: hw.timeLimit || 0, teacher: nameOf(hw.teacherId), count: hw.items.length, isOwner: !!(user && user.id === hw.teacherId) },
+      tasks
+    };
+    if (user && user.role === 'student') {
+      const s = db.submissions.find(x => x.hwId === id && x.userId === user.id);
+      if (s) out.result = resultOf(s);
+    }
+    return send(res, 200, out);
+  }
+  if (req.method !== 'POST') return send(res, 405, { error: 'Нельзя' });
+  const key = user ? user.id : 'g:' + str(b.name, 40).toLowerCase();
+  const sk = id + '|' + key;
+  if (act === 'start') {
+    if (!db.starts[sk]) { db.starts[sk] = Date.now(); save('starts'); }
+    const rem = hw.timeLimit ? Math.max(0, hw.timeLimit * 60000 - (Date.now() - db.starts[sk])) : null;
+    return send(res, 200, { remainingMs: rem });
+  }
+  if (act === 'submit') {
+    if (user && user.role === 'teacher') return send(res, 403, { error: 'Учитель не может сдавать домашку' });
+    const name = user ? user.name : str(b.name, 40);
+    if (!name) return send(res, 400, { error: 'Введите имя' });
+    if (user) {
+      const old = db.submissions.find(x => x.hwId === id && x.userId === user.id);
+      if (old) return send(res, 409, { error: 'Вы уже сдали эту домашку', alreadySubmitted: true, result: resultOf(old) });
+    }
+    const answers = b.answers || {};
+    const details = hw.items.map((x, i) => {
+      const given = str(answers[i], 200);
+      if (!x.answer) return { correct: null, given, right: '' };
+      return { correct: isRight(given, x.answer), given, right: x.answer };
+    });
+    const s = {
+      id: rid(10), hwId: id, userId: user ? user.id : null, name,
+      score: details.filter(d => d.correct === true).length,
+      maxScore: hw.items.filter(x => x.answer).length,
+      details, date: Date.now(),
+      late: !!(hw.timeLimit && db.starts[sk] && Date.now() > db.starts[sk] + hw.timeLimit * 60000 + 30000)
+    };
+    db.submissions.push(s); save('submissions');
+    return send(res, 200, { result: resultOf(s) });
+  }
+  send(res, 404, { error: 'Нет такого действия' });
+}
+
+/* ---------- результаты для учителя ---------- */
+function buildResults(hw) {
+  const subs = db.submissions.filter(s => s.hwId === hw.id);
+  const errors = [];
+  hw.items.forEach((x, i) => {
+    if (!x.answer) return;
+    const total = subs.filter(s => s.details[i]).length;
+    const wrong = subs.filter(s => s.details[i] && s.details[i].correct === false).length;
+    if (wrong > 0) errors.push({ i, total, wrong });
+  });
+  errors.sort((a, b) => b.wrong / b.total - a.wrong / a.total);
+  let notSubmitted = [];
+  if (hw.classId) {
+    const c = db.classes.find(k => k.id === hw.classId);
+    if (c) notSubmitted = c.students.filter(id => !subs.some(s => s.userId === id)).map(nameOf);
+  }
+  const avg = subs.length ? Math.round(subs.reduce((a, s) => a + (s.maxScore ? s.score / s.maxScore : 0), 0) / subs.length * 100) : 0;
   return {
-    id: nid(8), hwId: h.id, userId: user ? user.id : null,
-    name: user ? user.name : (name || 'Гость'), registered: !!user,
-    score: details.filter(d => d.ok).length, total: details.length, details: details, date: now,
-    late: !!(h.deadline && now > h.deadline),
-    overtime: !!(h.timeLimit && startedAt && now > startedAt + h.timeLimit * 60000)
+    homework: { id: hw.id, title: hw.title, count: hw.items.length },
+    results: subs.map(s => ({ id: s.id, name: s.name, score: s.score, maxScore: s.maxScore, date: s.date, late: s.late })),
+    avg, errors, notSubmitted
   };
 }
-const strip1 = t => ({ id: t.id, text: t.text, image: t.image || '', options: t.options || [] });
 
-async function apiRoute(req, res, p) {
-  const m = req.method;
-  let body = null;
-  if (m === 'POST' || m === 'PUT') { try { body = JSON.parse(await readBody(req) || '{}'); } catch (e) { body = {}; } }
-  const user = await getUser(req);
-  let mm;
-
-  if (p === '/api/config' && m === 'GET') return json(res, 200, { inviteRequired: !!INVITE });
-
-  if (p === '/api/me' && m === 'GET') return user ? json(res, 200, { user: pub(user) }) : err(res, 401, 'Вы не вошли');
-
-  if (p === '/api/register' && m === 'POST') {
-    const email = String(body.email || '').trim().toLowerCase();
-    const password = String(body.password || '');
-    const name = String(body.name || '').trim();
-    const role = body.role === 'teacher' ? 'teacher' : 'student';
-    if (!email || email.indexOf('@') < 0) return err(res, 400, 'Введите email');
-    if (password.length < 6) return err(res, 400, 'Пароль минимум 6 символов');
-    if (!name) return err(res, 400, 'Введите имя');
-    if (role === 'teacher' && INVITE && String(body.invite || '') !== INVITE) return err(res, 400, 'Неверный код приглашения');
-    const users = await load('users', []);
-    if (users.some(x => x.email === email)) return err(res, 400, 'Такой email уже зарегистрирован');
-    const nu = { id: nid(8), email: email, pass: hash(password), name: name, role: role, hwIds: [] };
-    users.push(nu); await kvSet('users', users);
-    return json(res, 200, { user: pub(nu) }, cookieHdr(await newSession(nu.id)));
+/* ---------- API ---------- */
+async function api(req, res, p, m, url) {
+  let b = {};
+  if (m === 'POST' || m === 'PUT') {
+    try { b = await readBody(req); } catch (e) { return send(res, 400, { error: 'Неверный запрос' }); }
   }
+  const user = getUser(req);
+  let r;
 
-  if (p === '/api/login' && m === 'POST') {
-    const email = String(body.email || '').trim().toLowerCase();
-    const users = await load('users', []);
-    const u2 = users.find(x => x.email === email);
-    if (!u2 || u2.pass !== hash(String(body.password || ''))) return err(res, 400, 'Неверный email или пароль');
-    return json(res, 200, { user: pub(u2) }, cookieHdr(await newSession(u2.id)));
-  }
-
+  if (p === '/api/config' && m === 'GET') return send(res, 200, { inviteRequired: !!INVITE });
+  if (p === '/api/stats' && m === 'GET') return send(res, 200, stats());
+  if (p === '/api/register' && m === 'POST') return register(req, res, b);
+  if (p === '/api/login' && m === 'POST') return login(req, res, b);
   if (p === '/api/logout' && m === 'POST') {
-    const t = getCookie(req);
-    if (t) await kvDel('sess:' + t);
-    return json(res, 200, { ok: true }, { 'Set-Cookie': 'sid=; Path=/; Max-Age=0' });
+    const sid = cookies(req).sid;
+    if (sid && db.sessions[sid]) { delete db.sessions[sid]; save('sessions'); }
+    return send(res, 200, { ok: true }, { 'Set-Cookie': 'sid=; HttpOnly; Path=/; Max-Age=0' });
+  }
+  if (p === '/api/me') return send(res, 200, { user: user ? pub(user) : null });
+  if (p.startsWith('/api/admin/')) return admin(res, p, url);
+  if ((r = /^\/api\/hw\/(\w+)(?:\/(start|submit))?$/.exec(p))) return hwRoute(req, res, r[1], r[2], b, user);
+
+  if (!user) return send(res, 401, { error: 'Нужно войти' });
+
+  if (p === '/api/subscribe' && m === 'POST') {
+    const contact = str(b.contact, 120);
+    if (contact.length < 3) return send(res, 400, { error: 'Укажите телефон, Telegram или email' });
+    db.requests.push({ userId: user.id, email: user.email, name: user.name, contact, date: Date.now() });
+    save('requests');
+    return send(res, 200, { ok: true });
   }
 
-  if (p === '/api/my' && m === 'GET') {
-    if (!user) return err(res, 401, 'Вы не вошли');
-    const r = await Promise.all([load('homeworks', []), load('submissions', []), load('classes', [])]);
-    const hws = r[0], subs = r[1], classes = r[2];
-    const myClasses = classes.filter(c => (c.students || []).some(s => s.id === user.id));
-    const myClassIds = myClasses.map(c => c.id);
-    const mySubs = subs.filter(s => s.userId === user.id);
-    const subHw = {}; mySubs.forEach(s => subHw[s.hwId] = 1);
-    const todo = hws.filter(h => ((h.classId && myClassIds.indexOf(h.classId) >= 0) || (user.hwIds || []).indexOf(h.id) >= 0) && !subHw[h.id])
-      .map(h => ({ id: h.id, title: h.title, count: (h.taskIds || []).length, timeLimit: h.timeLimit || 0, deadline: h.deadline || null }));
-    const done = mySubs.sort((a, b) => b.date - a.date).map(s => {
-      const h = hws.find(x => x.id === s.hwId);
-      return { title: h ? h.title : 'Домашка удалена', score: s.score, total: s.total, date: s.date, details: s.details, late: s.late, overtime: s.overtime };
-    });
-    return json(res, 200, { todo: todo, done: done, classes: myClasses.map(c => ({ id: c.id, name: c.name })) });
+  /* --- ученик --- */
+  if (user.role === 'student') {
+    if (p === '/api/my' && m === 'GET') {
+      const cls = db.classes.filter(c => c.students.includes(user.id));
+      const ids = cls.map(c => c.id);
+      const mine = db.submissions.filter(s => s.userId === user.id);
+      const todo = db.homeworks
+        .filter(h => ids.includes(h.classId) && !mine.some(s => s.hwId === h.id))
+        .sort((a, c) => c.created - a.created)
+        .map(h => ({ id: h.id, title: h.title, count: h.items.length, timeLimit: h.timeLimit || 0, teacher: nameOf(h.teacherId) }));
+      const done = mine.map(s => {
+        const h = db.homeworks.find(x => x.id === s.hwId);
+        return h ? { hwId: h.id, title: h.title, score: s.score, maxScore: s.maxScore, date: s.date } : null;
+      }).filter(Boolean).sort((a, c) => c.date - a.date);
+      return send(res, 200, { todo, done, classes: cls.map(c => ({ id: c.id, name: c.name, teacher: nameOf(c.teacherId) })) });
+    }
+    if (p === '/api/classes/join' && m === 'POST') {
+      const code = str(b.code, 20).toUpperCase();
+      const c = db.classes.find(k => k.code === code);
+      if (!c) return send(res, 404, { error: 'Код не найден. Проверьте, что вводите код учителя без пробелов.' });
+      if (!c.students.includes(user.id)) { c.students.push(user.id); save('classes'); }
+      return send(res, 200, { ok: true });
+    }
+    if ((r = /^\/api\/classes\/(\w+)\/leave$/.exec(p)) && m === 'POST') {
+      const c = db.classes.find(k => k.id === r[1]);
+      if (c) { c.students = c.students.filter(x => x !== user.id); save('classes'); }
+      return send(res, 200, { ok: true });
+    }
+    return send(res, 403, { error: 'Нет доступа' });
   }
 
-  if (p === '/api/classes/join' && m === 'POST') {
-    if (!user) return err(res, 401, 'Вы не вошли');
-    const code = String(body.code || '').trim().toUpperCase();
-    const classes = await load('classes', []);
-    const c = classes.find(x => x.code === code);
-    if (!c) return err(res, 400, 'Класс с таким кодом не найден');
-    if (!(c.students || []).some(s => s.id === user.id)) {
-      c.students = c.students || [];
-      c.students.push({ id: user.id, name: user.name, email: user.email });
-      await kvSet('classes', classes);
+  /* --- учитель --- */
+  if (user.role !== 'teacher') return send(res, 403, { error: 'Нет доступа' });
+  if (!active(user)) return send(res, 402, { error: 'Нужна подписка', paywall: true });
+
+  if (p === '/api/tasks') {
+    if (m === 'GET') return send(res, 200, { tasks: db.tasks.filter(t => t.teacherId === user.id) });
+    if (m === 'POST') {
+      const text = str(b.text, 3000), img = b.img ? await putImg(b.img) : '';
+      if (!text && !img) return send(res, 400, { error: 'Добавьте текст или картинку' });
+      const t = { id: rid(), teacherId: user.id, text, answer: str(b.answer, 200), img, topic: str(b.topic, 60), created: Date.now() };
+      db.tasks.push(t); save('tasks');
+      return send(res, 200, { task: t });
     }
-    return json(res, 200, { name: c.name });
   }
-  if ((mm = p.match(/^\/api\/classes\/([^/]+)\/leave$/)) && m === 'POST') {
-    if (!user) return err(res, 401, 'Вы не вошли');
-    const classes = await load('classes', []);
-    const c = classes.find(x => x.id === mm[1]);
-    if (c) { c.students = (c.students || []).filter(s => s.id !== user.id); await kvSet('classes', classes); }
-    return json(res, 200, { ok: true });
+  if ((r = /^\/api\/tasks\/(\w+)$/.exec(p))) {
+    const t = db.tasks.find(x => x.id === r[1] && x.teacherId === user.id);
+    if (!t) return send(res, 404, { error: 'Не найдено' });
+    if (m === 'DELETE') { db.tasks = db.tasks.filter(x => x !== t); save('tasks'); return send(res, 200, { ok: true }); }
+    if (m === 'PUT') {
+      if (b.text !== undefined) t.text = str(b.text, 3000);
+      if (b.answer !== undefined) t.answer = str(b.answer, 200);
+      if (b.topic !== undefined) t.topic = str(b.topic, 60);
+      save('tasks');
+      return send(res, 200, { task: t });
+    }
   }
 
-  if (p === '/api/tasks' && m === 'GET') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const tasks = await load('tasks', []);
-    return json(res, 200, tasks.filter(t => t.owner === user.id));
-  }
-  if (p === '/api/tasks' && m === 'POST') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const tasks = await load('tasks', []);
-    const t = { id: nid(8), text: String(body.text || ''), answer: String(body.answer || ''), topic: String(body.topic || ''), options: Array.isArray(body.options) ? body.options : [], image: String(body.image || ''), owner: user.id };
-    tasks.unshift(t); await kvSet('tasks', tasks);
-    return json(res, 200, t);
-  }
-  if (p === '/api/tasks/bulk' && m === 'POST') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const lines = String(body.text || '').split('\n').map(l => l.trim()).filter(Boolean);
-    const tasks = await load('tasks', []);
-    let added = 0, bad = 0;
-    for (const l of lines) {
-      const parts = l.split(';').map(s => s.trim());
-      if (parts.length < 2 || !parts[0] || !parts[1]) { bad++; continue; }
-      tasks.unshift({ id: nid(8), text: parts[0], answer: parts[1], topic: String(body.topic || parts[2] || ''), options: [], image: '', owner: user.id });
-      added++;
+  if (p === '/api/classes') {
+    if (m === 'GET') {
+      return send(res, 200, {
+        classes: db.classes.filter(c => c.teacherId === user.id).map(c => ({
+          id: c.id, name: c.name, code: c.code, isMain: c.code === user.teacherCode,
+          students: c.students.map(id => { const s = db.users.find(x => x.id === id); return s ? { id: s.id, name: s.name, email: s.email } : null; }).filter(Boolean)
+        }))
+      });
     }
-    await kvSet('tasks', tasks);
-    return json(res, 200, { added: added, bad: bad });
+    if (m === 'POST') {
+      const name = str(b.name, 40);
+      if (!name) return send(res, 400, { error: 'Введите название класса' });
+      const c = { id: rid(), teacherId: user.id, name, code: genCode(), students: [], created: Date.now() };
+      db.classes.push(c); save('classes');
+      return send(res, 200, { class: c });
+    }
   }
-  if ((mm = p.match(/^\/api\/tasks\/([^/]+)$/)) && m === 'PUT') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const tasks = await load('tasks', []);
-    const t = tasks.find(x => x.id === mm[1] && x.owner === user.id);
-    if (!t) return err(res, 404, 'Не найдено');
-    if (body.text != null) t.text = String(body.text);
-    if (body.answer != null) t.answer = String(body.answer);
-    if (body.topic != null) t.topic = String(body.topic);
-    if (Array.isArray(body.options)) t.options = body.options;
-    if (body.image != null) t.image = String(body.image);
-    await kvSet('tasks', tasks);
-    return json(res, 200, t);
+  if ((r = /^\/api\/classes\/(\w+)\/students\/(\w+)$/.exec(p)) && m === 'DELETE') {
+    const c = db.classes.find(k => k.id === r[1] && k.teacherId === user.id);
+    if (!c) return send(res, 404, { error: 'Не найдено' });
+    c.students = c.students.filter(x => x !== r[2]); save('classes');
+    return send(res, 200, { ok: true });
   }
-  if ((mm = p.match(/^\/api\/tasks\/([^/]+)$/)) && m === 'DELETE') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    let tasks = await load('tasks', []);
-    tasks = tasks.filter(x => !(x.id === mm[1] && x.owner === user.id));
-    await kvSet('tasks', tasks);
-    return json(res, 200, { ok: true });
+  if ((r = /^\/api\/classes\/(\w+)$/.exec(p)) && m === 'DELETE') {
+    const c = db.classes.find(k => k.id === r[1] && k.teacherId === user.id);
+    if (!c) return send(res, 404, { error: 'Не найдено' });
+    if (c.code === user.teacherCode) return send(res, 400, { error: 'Основной класс удалить нельзя — это ваш код учителя' });
+    db.classes = db.classes.filter(k => k !== c); save('classes');
+    return send(res, 200, { ok: true });
   }
 
-  if (p === '/api/homeworks' && m === 'GET') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const r = await Promise.all([load('homeworks', []), load('submissions', []), load('classes', [])]);
-    const hws = r[0], subs = r[1], classes = r[2];
-    return json(res, 200, hws.filter(h => h.owner === user.id).map(h => {
-      const c = h.classId ? classes.find(x => x.id === h.classId) : null;
-      return { id: h.id, title: h.title, count: (h.taskIds || []).length, submitted: subs.filter(s => s.hwId === h.id).length, className: c ? c.name : '', timeLimit: h.timeLimit || 0, deadline: h.deadline || null };
-    }));
-  }
-  if (p === '/api/homeworks' && m === 'POST') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const hws = await load('homeworks', []);
-    const h = { id: nid(8), title: String(body.title || 'Домашка'), classId: body.classId || null, deadline: body.deadline ? Number(body.deadline) : null, timeLimit: Number(body.timeLimit) || 0, taskIds: Array.isArray(body.taskIds) ? body.taskIds : [], owner: user.id };
-    hws.unshift(h); await kvSet('homeworks', hws);
-    return json(res, 200, h);
-  }
-  if ((mm = p.match(/^\/api\/homeworks\/([^/]+)\/results$/)) && m === 'GET') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const r = await Promise.all([load('homeworks', []), load('submissions', []), load('tasks', []), load('classes', [])]);
-    const hws = r[0], subs = r[1], tasks = r[2], classes = r[3];
-    const h = hws.find(x => x.id === mm[1] && x.owner === user.id);
-    if (!h) return err(res, 404, 'Не найдено');
-    const rs = subs.filter(s => s.hwId === h.id);
-    const tlist = (h.taskIds || []).map(tid => tasks.find(t => t.id === tid));
-    const taskTexts = tlist.map(t => t ? (t.text || '[задание с картинкой]') : '');
-    const taskImages = tlist.map(t => t && t.image ? t.image : null);
-    const avg = rs.length ? Math.round(rs.reduce((s, x) => s + (x.total ? x.score / x.total * 100 : 0), 0) / rs.length) : 0;
-    let missing = [];
-    if (h.classId) {
-      const c = classes.find(x => x.id === h.classId);
-      if (c) missing = (c.students || []).filter(st => !rs.some(s => s.userId === st.id)).map(st => st.name);
+  if (p === '/api/homeworks') {
+    if (m === 'GET') {
+      return send(res, 200, {
+        homeworks: db.homeworks.filter(h => h.teacherId === user.id).sort((a, c) => c.created - a.created).map(h => {
+          const c = db.classes.find(k => k.id === h.classId);
+          return { id: h.id, title: h.title, count: h.items.length, classId: h.classId, className: c ? c.name : '', created: h.created, timeLimit: h.timeLimit || 0, done: db.submissions.filter(s => s.hwId === h.id).length };
+        })
+      });
     }
-    return json(res, 200, { title: h.title, results: rs, missing: missing, avg: avg, taskTexts: taskTexts, taskImages: taskImages });
-  }
-  if ((mm = p.match(/^\/api\/homeworks\/([^/]+)\/export$/)) && m === 'GET') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const r = await Promise.all([load('homeworks', []), load('submissions', []), load('tasks', [])]);
-    const hws = r[0], subs = r[1], tasks = r[2];
-    const h = hws.find(x => x.id === mm[1] && x.owner === user.id);
-    if (!h) return err(res, 404, 'Не найдено');
-    const rs = subs.filter(s => s.hwId === h.id);
-    const tlist = (h.taskIds || []).map(tid => tasks.find(t => t.id === tid));
-    let csv = '\uFEFFИмя;Балл;Из;Процент;Дата';
-    tlist.forEach((t, i) => csv += ';Задание ' + (i + 1));
-    csv += '\r\n';
-    for (const s of rs) {
-      const pr = s.total ? Math.round(s.score / s.total * 100) : 0;
-      csv += [csvEsc(s.name), s.score, s.total, pr + '%', new Date(s.date).toLocaleString('ru-RU')].join(';');
-      (s.details || []).forEach(d => csv += ';' + csvEsc(d.given) + (d.ok ? ' (верно)' : ' (неверно, верно: ' + csvEsc(d.correct) + ')'));
-      csv += '\r\n';
+    if (m === 'POST') {
+      let items = [];
+      if (Array.isArray(b.items)) {
+        for (const x of b.items.slice(0, 100)) {
+          items.push({ text: str(x.text, 3000), img: x.img ? await putImg(x.img) : '', answer: str(x.answer, 200), topic: '' });
+        }
+      } else if (Array.isArray(b.taskIds)) {
+        for (const id of b.taskIds.slice(0, 100)) {
+          const t = db.tasks.find(x => x.id === id && x.teacherId === user.id);
+          if (t) items.push({ text: t.text, img: t.img, answer: t.answer, topic: t.topic });
+        }
+      }
+      items = items.filter(x => x.text || x.img);
+      if (!items.length) return send(res, 400, { error: 'Нет заданий' });
+      let classId = null;
+      if (b.classId) {
+        const c = db.classes.find(k => k.id === b.classId && k.teacherId === user.id);
+        if (c) classId = c.id;
+      }
+      const hw = {
+        id: rid(8), teacherId: user.id, title: str(b.title, 80) || 'Домашка', items, classId,
+        timeLimit: Math.max(0, Math.min(600, parseInt(b.timeLimit, 10) || 0)), created: Date.now()
+      };
+      db.homeworks.push(hw); save('homeworks');
+      return send(res, 200, { homework: { id: hw.id } });
     }
-    return send(res, 200, csv, 'text/csv; charset=utf-8', { 'Content-Disposition': 'attachment; filename="results.csv"' });
   }
-  if ((mm = p.match(/^\/api\/homeworks\/([^/]+)$/)) && m === 'DELETE') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    let hws = await load('homeworks', []);
-    hws = hws.filter(x => !(x.id === mm[1] && x.owner === user.id));
-    await kvSet('homeworks', hws);
-    return json(res, 200, { ok: true });
+  if ((r = /^\/api\/homeworks\/(\w+)(?:\/(results|export))?$/.exec(p))) {
+    const hw = db.homeworks.find(h => h.id === r[1] && h.teacherId === user.id);
+    if (!hw) return send(res, 404, { error: 'Не найдено' });
+    if (m === 'DELETE' && !r[2]) {
+      db.homeworks = db.homeworks.filter(h => h !== hw);
+      db.submissions = db.submissions.filter(s => s.hwId !== hw.id);
+      save('homeworks', 'submissions');
+      return send(res, 200, { ok: true });
+    }
+    if (m === 'GET' && r[2] === 'results') return send(res, 200, buildResults(hw));
+    if (m === 'GET' && r[2] === 'export') {
+      const subs = db.submissions.filter(s => s.hwId === hw.id);
+      const rows = [['Имя', 'Баллы', 'Из', 'Дата'].concat(hw.items.map((_, i) => '№' + (i + 1)))];
+      subs.forEach(s => rows.push([s.name, s.score, s.maxScore, new Date(s.date).toISOString().slice(0, 16).replace('T', ' ')].concat(s.details.map(d => d.correct === null ? '' : d.correct ? 1 : 0))));
+      const cell = c => { c = String(c); if (/^[=+\-@]/.test(c)) c = "'" + c; return '"' + c.replace(/"/g, '""') + '"'; };
+      const csv = '\uFEFF' + rows.map(row => row.map(cell).join(';')).join('\r\n');
+      res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="results.csv"' });
+      return res.end(csv);
+    }
+  }
+  if ((r = /^\/api\/submissions\/(\w+)$/.exec(p)) && m === 'DELETE') {
+    const s = db.submissions.find(x => x.id === r[1]);
+    const hw = s && db.homeworks.find(h => h.id === s.hwId && h.teacherId === user.id);
+    if (!hw) return send(res, 404, { error: 'Не найдено' });
+    db.submissions = db.submissions.filter(x => x !== s); save('submissions');
+    return send(res, 200, { ok: true });
   }
 
-  if (p === '/api/classes' && m === 'GET') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const classes = await load('classes', []);
-    return json(res, 200, classes.filter(c => c.owner === user.id));
-  }
-  if (p === '/api/classes' && m === 'POST') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const classes = await load('classes', []);
-    const c = { id: nid(8), name: String(body.name || 'Класс'), code: genCode(), owner: user.id, students: [] };
-    classes.unshift(c); await kvSet('classes', classes);
-    return json(res, 200, c);
-  }
-  if ((mm = p.match(/^\/api\/classes\/([^/]+)\/students\/([^/]+)$/)) && m === 'DELETE') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    const classes = await load('classes', []);
-    const c = classes.find(x => x.id === mm[1] && x.owner === user.id);
-    if (c) { c.students = (c.students || []).filter(s => s.id !== mm[2]); await kvSet('classes', classes); }
-    return json(res, 200, { ok: true });
-  }
-  if ((mm = p.match(/^\/api\/classes\/([^/]+)$/)) && m === 'DELETE') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    let classes = await load('classes', []);
-    classes = classes.filter(x => !(x.id === mm[1] && x.owner === user.id));
-    await kvSet('classes', classes);
-    return json(res, 200, { ok: true });
-  }
-
-  if ((mm = p.match(/^\/api\/hw\/([^/]+)$/)) && m === 'GET') {
-    const r = await Promise.all([load('homeworks', []), load('tasks', []), load('submissions', []), load('starts', {})]);
-    const hws = r[0], tasks = r[1], subs = r[2], starts = r[3];
-    const h = hws.find(x => x.id === mm[1]);
-    if (!h) return err(res, 404, 'Домашка не найдена');
-    const teacher = !!(user && user.role === 'teacher' && h.owner === user.id);
-    const role = teacher ? 'teacher' : (user ? 'student' : 'guest');
-    const tlist = (h.taskIds || []).map(tid => tasks.find(t => t.id === tid)).filter(Boolean);
-    const gc = guestCookie(req); const ukey = user ? user.id : gc[0]; const ghdr = gc[1];
-    if (user && user.role === 'student') {
-      const users = await load('users', []);
-      const me2 = users.find(x => x.id === user.id);
-      if (me2 && (me2.hwIds || []).indexOf(h.id) < 0) { me2.hwIds = me2.hwIds || []; me2.hwIds.push(h.id); await kvSet('users', users); }
-    }
-    let mine = user ? (subs.find(s => s.hwId === h.id && s.userId === user.id) || null) : null;
-    const startedAt = starts[h.id + ':' + ukey];
-    if (!teacher && !mine && h.timeLimit && startedAt && Date.now() > startedAt + h.timeLimit * 60000) {
-      mine = makeSub(h, tlist, {}, user, startedAt);
-      subs.push(mine); await kvSet('submissions', subs);
-    }
-    const out = { id: h.id, title: h.title, count: tlist.length, timeLimit: h.timeLimit || 0, deadline: h.deadline || null, role: role };
-    if (mine) { out.mine = mine; return json(res, 200, out, ghdr); }
-    if (teacher) { out.tasks = tlist.map(strip1); return json(res, 200, out, ghdr); }
-    if (h.timeLimit && !startedAt) { out.needStart = true; return json(res, 200, out, ghdr); }
-    out.tasks = tlist.map(strip1);
-    if (h.timeLimit && startedAt) out.timeLeft = Math.max(0, Math.round(h.timeLimit * 60 - (Date.now() - startedAt) / 1000));
-    return json(res, 200, out, ghdr);
-  }
-  if ((mm = p.match(/^\/api\/hw\/([^/]+)\/start$/)) && m === 'POST') {
-    const r = await Promise.all([load('homeworks', []), load('tasks', []), load('starts', {})]);
-    const hws = r[0], tasks = r[1], starts = r[2];
-    const h = hws.find(x => x.id === mm[1]);
-    if (!h) return err(res, 404, 'Не найдено');
-    const gc = guestCookie(req); const ukey = user ? user.id : gc[0]; const ghdr = gc[1];
-    if (!starts[h.id + ':' + ukey]) { starts[h.id + ':' + ukey] = Date.now(); await kvSet('starts', starts); }
-    const tlist = (h.taskIds || []).map(tid => tasks.find(t => t.id === tid)).filter(Boolean);
-    const left = Math.max(0, Math.round((h.timeLimit || 0) * 60 - (Date.now() - starts[h.id + ':' + ukey]) / 1000));
-    return json(res, 200, { tasks: tlist.map(strip1), timeLeft: left }, ghdr);
-  }
-  if ((mm = p.match(/^\/api\/hw\/([^/]+)\/submit$/)) && m === 'POST') {
-    const r = await Promise.all([load('homeworks', []), load('tasks', []), load('submissions', []), load('starts', {})]);
-    const hws = r[0], tasks = r[1], subs = r[2], starts = r[3];
-    const h = hws.find(x => x.id === mm[1]);
-    if (!h) return err(res, 404, 'Не найдено');
-    if (user && user.role === 'teacher' && h.owner === user.id) return err(res, 400, 'Это предпросмотр, ответы не сохраняются');
-    const tlist = (h.taskIds || []).map(tid => tasks.find(t => t.id === tid)).filter(Boolean);
-    const ukey = user ? user.id : getCookie(req);
-    const startedAt = starts[h.id + ':' + ukey] || 0;
-    let sub;
-    if (user) {
-      const i = subs.findIndex(s => s.hwId === h.id && s.userId === user.id);
-      sub = makeSub(h, tlist, body.answers || {}, user, startedAt);
-      if (i >= 0) subs[i] = sub; else subs.push(sub);
-    } else {
-      sub = makeSub(h, tlist, body.answers || {}, null, startedAt, body.name);
-      subs.push(sub);
-    }
-    await kvSet('submissions', subs);
-    return json(res, 200, sub);
-  }
-
-  if ((mm = p.match(/^\/api\/submissions\/([^/]+)$/)) && m === 'DELETE') {
-    if (!user || user.role !== 'teacher') return err(res, 401, 'Только для учителя');
-    let subs = await load('submissions', []);
-    const s = subs.find(x => x.id === mm[1]);
-    if (s) {
-      const hws = await load('homeworks', []);
-      const h = hws.find(x => x.id === s.hwId);
-      if (!h || h.owner !== user.id) return err(res, 403, 'Нет доступа');
-      subs = subs.filter(x => x.id !== mm[1]);
-      await kvSet('submissions', subs);
-    }
-    return json(res, 200, { ok: true });
-  }
-
-  return err(res, 404, 'Неизвестный запрос');
+  send(res, 404, { error: 'Не найдено' });
 }
 
+/* ---------- сервер ---------- */
 const server = http.createServer(async (req, res) => {
-  const p = new URL(req.url, 'http://x').pathname;
   try {
-    if (p.startsWith('/api/')) return await apiRoute(req, res, p);
-    let file = p === '/' ? '/index.html' : p;
-    if (p.startsWith('/h/')) file = '/index.html';
-    const fp = path.join(__dirname, path.normalize(file));
-    if (!fp.startsWith(__dirname)) return send(res, 403, 'forbidden');
-    fs.readFile(fp, (e, data) => {
-      if (e) return send(res, 404, 'Not found');
-      send(res, 200, data, TYPES[path.extname(fp).toLowerCase()] || 'application/octet-stream');
-    });
-  } catch (e) { err(res, 500, 'Server error: ' + e.message); }
+    const url = new URL(req.url, 'http://x');
+    const p = url.pathname;
+    if (p.startsWith('/api/')) return await api(req, res, p, req.method, url);
+    if (p.startsWith('/img/')) {
+      const h = p.slice(5);
+      const d = /^[a-f0-9]{40}$/.test(h) ? await getImg(h) : null;
+      const i = d ? d.indexOf(',') : -1;
+      if (i < 0) { res.writeHead(404); return res.end(); }
+      const mime = /^data:(image\/[\w+]+);base64/.exec(d.slice(0, i));
+      res.writeHead(200, { 'Content-Type': mime ? mime[1] : 'image/jpeg', 'Cache-Control': 'public,max-age=31536000,immutable' });
+      return res.end(Buffer.from(d.slice(i + 1), 'base64'));
+    }
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+    res.end(fs.readFileSync(path.join(__dirname, 'index.html')));
+  } catch (e) {
+    console.error(e);
+    if (!res.headersSent) send(res, 500, { error: 'Ошибка сервера' }); else res.end();
+  }
 });
 
-server.listen(PORT, () => console.log('Server running on port ' + PORT));
+(async () => {
+  try { await load(); }
+  catch (e) { console.error('Не удалось загрузить данные:', e.message); process.exit(1); }
+  const now = Date.now();
+  for (const k in db.sessions) if (db.sessions[k].exp < now) delete db.sessions[k];
+  console.log(USE_SB ? 'Данные хранятся в Supabase.' : 'Данные хранятся в файле ' + FILE);
+  server.listen(PORT, () => console.log('Сервер работает: http://localhost:' + PORT));
+  if (USE_SB) setInterval(() => sbReq('kv?select=k&limit=1').catch(e => console.error('ping', e.message)), 12 * 3600e3);
+})();
