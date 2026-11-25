@@ -1,4 +1,5 @@
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
+
 const PORT = process.env.PORT || 3000;
 const INVITE = process.env.INVITE_CODE || '';
 const ADMIN_KEY = process.env.ADMIN_KEY || '';
@@ -34,7 +35,7 @@ async function load() {
     try { db = JSON.parse(fs.readFileSync(FILE, 'utf8')); }
     catch (e) { console.error('data.json повреждён'); process.exit(1); }
   }
-  for (const k of KEYS) if (db[k] === undefined) db[k] = JSON.parse(JSON.stringify(DEF[k]));
+  for (const k of KEYS) if (db[k] === undefined || db[k] === null) db[k] = JSON.parse(JSON.stringify(DEF[k]));
   if (!USE_SB && !db.images) db.images = {};
 }
 function save(...ks) {
@@ -97,10 +98,13 @@ function genCode() {
   while (db.classes.some(k => k.code === c));
   return c;
 }
-const hashPw = (pw, salt) => crypto.scryptSync(pw, salt, 64).toString('hex');
+const hashPw = (pw, salt) => crypto.scryptSync(String(pw), String(salt), 64).toString('hex');
 function pwOk(u, pw) {
-  const a = Buffer.from(hashPw(String(pw || ''), u.salt), 'hex'), c = Buffer.from(u.hash, 'hex');
-  return a.length === c.length && crypto.timingSafeEqual(a, c);
+  try {
+    if (!u || !u.salt || !u.hash) return false;
+    const a = Buffer.from(hashPw(pw == null ? '' : pw, u.salt), 'hex'), c = Buffer.from(String(u.hash), 'hex');
+    return a.length === c.length && crypto.timingSafeEqual(a, c);
+  } catch (e) { return false; }
 }
 function send(res, code, obj, extra) {
   res.writeHead(code, Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, extra || {}));
@@ -151,6 +155,30 @@ function stats() {
 const norm = s => String(s == null ? '' : s).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, '').replace(/,/g, '.');
 const isRight = (given, right) => { const g = norm(given); return g !== '' && String(right).split('|').some(v => norm(v) === g); };
 
+/* приведение старых данных к новому формату */
+function migrate() {
+  let u = false, c = false, h = false, s = false;
+  db.homeworks.forEach(x => { if (!Array.isArray(x.items)) { x.items = []; h = true; } });
+  db.submissions.forEach(x => { if (!Array.isArray(x.details)) { x.details = []; s = true; } });
+  db.classes.forEach(x => { if (!Array.isArray(x.students)) { x.students = []; c = true; } });
+  const ts = db.users.filter(x => x.role === 'teacher').sort((a, b) => (a.created || 0) - (b.created || 0));
+  let maxSeq = Math.max(0, ...ts.map(x => x.seq || 0));
+  for (const t of ts) {
+    if (!t.seq) { t.seq = ++maxSeq; u = true; }
+    if (!t.plan) { t.plan = t.seq <= FREE_LIMIT ? 'free' : 'none'; u = true; }
+    if (!t.teacherCode) {
+      t.teacherCode = genCode();
+      db.classes.push({ id: rid(), teacherId: t.id, name: 'Мои ученики', code: t.teacherCode, students: [], created: Date.now() });
+      u = true; c = true;
+    }
+  }
+  if (u) save('users');
+  if (c) save('classes');
+  if (h) save('homeworks');
+  if (s) save('submissions');
+  if (u || c || h || s) console.log('Старые данные приведены к новому формату.');
+}
+
 const fails = {};
 const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
 function checkPw(req, res, u, pw) {
@@ -189,7 +217,7 @@ function register(req, res, b) {
 function login(req, res, b) {
   const ip = ipOf(req), f = fails[ip];
   if (f && f.until > Date.now()) return send(res, 429, { error: 'Слишком много попыток. Подождите 10 минут.' });
-  const u = db.users.find(x => x.email === str(b.email, 100).toLowerCase());
+  const u = db.users.find(x => String(x.email || '').toLowerCase() === str(b.email, 100).toLowerCase());
   const ok = !!u && pwOk(u, b.password);
   if (!ok) {
     const x = fails[ip] || (fails[ip] = { n: 0, until: 0 });
@@ -223,13 +251,24 @@ function admin(res, p, url) {
   if (p === '/api/admin/stats') {
     return send(res, 200, {
       stats: stats(),
-      teachers: db.users.filter(u => u.role === 'teacher').map(u => ({ email: u.email, name: u.name, seq: u.seq, plan: u.plan, proUntil: u.proUntil || 0, created: u.created })),
+      users: db.users.map(u => ({ email: u.email, name: u.name, role: u.role, passwordOk: !!(u.salt && u.hash), plan: u.plan || '', created: u.created || 0 })),
       requests: db.requests,
       feedback: db.feedback.slice().reverse()
     });
   }
-  const u = db.users.find(x => x.email === String(url.searchParams.get('email') || '').toLowerCase() && x.role === 'teacher');
-  if (!u) return send(res, 404, { error: 'Учитель с таким email не найден' });
+  const email = String(url.searchParams.get('email') || '').trim().toLowerCase();
+  const u = db.users.find(x => String(x.email || '').toLowerCase() === email);
+  if (!u) return send(res, 404, { error: 'Пользователь с таким email не найден' });
+  if (p === '/api/admin/setpass') {
+    const pw = String(url.searchParams.get('password') || '');
+    if (pw.length < 6) return send(res, 400, { error: 'Пароль — минимум 6 символов' });
+    u.salt = crypto.randomBytes(16).toString('hex');
+    u.hash = hashPw(pw, u.salt);
+    for (const k in db.sessions) if (db.sessions[k].uid === u.id) delete db.sessions[k];
+    save('users', 'sessions');
+    return send(res, 200, { ok: true, email: u.email, message: 'Пароль изменён. Войдите с новым паролем.' });
+  }
+  if (u.role !== 'teacher') return send(res, 400, { error: 'Это не учитель' });
   if (p === '/api/admin/grant') {
     const days = parseInt(url.searchParams.get('days') || '30', 10);
     u.plan = 'pro'; u.proUntil = days > 0 ? Date.now() + days * 864e5 : 0;
@@ -314,7 +353,7 @@ function buildResults(hw) {
   const avg = subs.length ? Math.round(subs.reduce((a, s) => a + (s.maxScore ? s.score / s.maxScore : 0), 0) / subs.length * 100) : 0;
   return {
     homework: { id: hw.id, title: hw.title, count: hw.items.length },
-    results: subs.map(s => ({ id: s.id, name: s.name, score: s.score, maxScore: s.maxScore, date: s.date, late: s.late })),
+    results: subs.map(s => ({ id: s.id, name: s.name, score: s.score || 0, maxScore: s.maxScore || 0, date: s.date, late: s.late })),
     avg, errors, notSubmitted
   };
 }
@@ -407,7 +446,7 @@ async function api(req, res, p, m, url) {
         .map(h => ({ id: h.id, title: h.title, exam: h.exam || '', count: h.items.length, timeLimit: h.timeLimit || 0, teacher: nameOf(h.teacherId) }));
       const done = mine.map(s => {
         const h = db.homeworks.find(x => x.id === s.hwId);
-        return h ? { hwId: h.id, title: h.title, exam: h.exam || '', score: s.score, maxScore: s.maxScore, date: s.date } : null;
+        return h ? { hwId: h.id, title: h.title, exam: h.exam || '', score: s.score || 0, maxScore: s.maxScore || 0, date: s.date } : null;
       }).filter(Boolean).sort((a, c) => c.date - a.date);
       return send(res, 200, { todo, done, classes: cls.map(c => ({ id: c.id, name: c.name, teacher: nameOf(c.teacherId) })) });
     }
@@ -437,8 +476,8 @@ async function api(req, res, p, m, url) {
     const st = new Set();
     db.classes.filter(c => c.teacherId === user.id).forEach(c => c.students.forEach(x => st.add(x)));
     const avg = subs.length ? Math.round(subs.reduce((a, s) => a + (s.maxScore ? s.score / s.maxScore : 0), 0) / subs.length * 100) : 0;
-    const recent = subs.sort((a, c) => c.date - a.date).slice(0, 8).map(s => ({
-      name: s.name, score: s.score, maxScore: s.maxScore, date: s.date, hwId: s.hwId,
+    const recent = subs.slice().sort((a, c) => c.date - a.date).slice(0, 8).map(s => ({
+      name: s.name, score: s.score || 0, maxScore: s.maxScore || 0, date: s.date, hwId: s.hwId,
       title: (hws.find(h => h.id === s.hwId) || {}).title || ''
     }));
     return send(res, 200, {
@@ -586,7 +625,7 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
     res.end(fs.readFileSync(path.join(__dirname, 'index.html')));
   } catch (e) {
-    console.error(e);
+    console.error('ОШИБКА ЗАПРОСА', req.method, req.url.split('?')[0], e && e.stack || e);
     if (!res.headersSent) send(res, 500, { error: 'Ошибка сервера' }); else res.end();
   }
 });
@@ -596,6 +635,7 @@ const server = http.createServer(async (req, res) => {
   catch (e) { console.error('Не удалось загрузить данные:', e.message); process.exit(1); }
   const now = Date.now();
   for (const k in db.sessions) if (db.sessions[k].exp < now) delete db.sessions[k];
+  migrate();
   console.log(USE_SB ? 'Данные хранятся в Supabase.' : 'Данные хранятся в файле ' + FILE);
   server.listen(PORT, () => console.log('Сервер работает: http://localhost:' + PORT));
   if (USE_SB) setInterval(() => sbReq('kv?select=k&limit=1').catch(e => console.error('ping', e.message)), 12 * 3600e3);
