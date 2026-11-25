@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Админ — Проверка</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f3f5f9;color:#141c2b}
+[hidden]{display:none!important}
+input,select,textarea,button{font:inherit}
+input,select,textarea{border:1px solid #c7cfdd;border-radius:6px;padding:8px 10px;background:#fff;color:#141c2b;-webkit-text-fill-color:#141c2b}
+button{cursor:pointer}
+.btn{background:#1f5fc9;color:#fff;border:0;border-radius:6px;padding:8px 14px;font-weight:600}
+.btn.sec{background:#fff;color:#141c2b;border:1px solid #c7cfdd}
+.btn.red{background:#d92d20}
+.btn.sm{padding:4px 9px;font-size:13px}
+header{background:#10203a;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header b{font-size:18px}
+header .sp{flex:1}
+.pill{background:#1f3a66;border-radius:12px;padding:3px 10px;font-size:13px}
+#login{max-width:360px;margin:12vh auto;background:#fff;border:1px solid #d5dbe6;border-radius:10px;padding:24px}
+#login input{width:100%;margin:10px 0}
+#le{color:#d92d20;min-height:20px;font-size:14px}
+nav{background:#fff;border-bottom:1px solid #d5dbe6;padding:0 14px;display:flex;gap:4px;overflow:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:12px 14px;color:#4a5568;font-weight:600;white-space:nowrap}
+nav button.on{color:#1f5fc9;border-color:#1f5fc9}
+nav i{font-style:normal;background:#d92d20;color:#fff;border-radius:10px;padding:1px 7px;font-size:12px;margin-left:6px}
+main{max-width:1100px;margin:0 auto;padding:18px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.c{background:#fff;border:1px solid #d5dbe6;border-radius:8px;padding:14px}
+.c b{display:block;font-size:28px;color:#10203a}
+.c span{color:#5b6679;font-size:13px}
+.box{background:#fff;border:1px solid #d5dbe6;border-radius:8px;padding:14px;margin-bottom:14px;overflow:auto}
+h3{margin:0 0 10px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:8px;border-bottom:1px solid #e8ecf3;font-size:14px;vertical-align:middle}
+th{color:#5b6679;font-weight:600;font-size:13px}
+.empty{color:#5b6679;padding:14px}
+.warn{background:#fff4e5;border:1px solid #f5c26b;border-radius:8px;padding:10px 14px;margin-bottom:14px}
+.split{display:grid;grid-template-columns:300px 1fr;gap:14px}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.list{background:#fff;border:1px solid #d5dbe6;border-radius:8px;max-height:70vh;overflow:auto}
+.th{padding:10px 12px;border-bottom:1px solid #e8ecf3;cursor:pointer}
+.th.on{background:#eaf1fd}
+.th .nm{font-weight:600}
+.th .sub{font-size:12px;color:#5b6679}
+.th .last{font-size:13px;color:#3d4757;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{font-style:normal;background:#d92d20;color:#fff;border-radius:10px;padding:0 7px;font-size:12px;margin-left:6px}
+.conv{background:#fff;border:1px solid #d5dbe6;border-radius:8px;display:flex;flex-direction:column;min-height:420px}
+#ch{padding:10px 14px;border-bottom:1px solid #e8ecf3;display:flex;justify-content:space-between;gap:10px;align-items:center}
+#cm{flex:1;overflow:auto;padding:12px;background:#f3f5f9;max-height:55vh;min-height:260px}
+.m{max-width:80%;padding:8px 12px;border-radius:8px;margin-bottom:8px;white-space:pre-wrap;word-wrap:break-word}
+.m small{display:block;opacity:.7;font-size:11px;margin-top:2px}
+.m.u{background:#fff;border:1px solid #d5dbe6}
+.m.a{background:#1f5fc9;color:#fff;margin-left:auto}
+.send{display:flex;gap:8px;padding:10px;border-top:1px solid #e8ecf3}
+.send textarea{flex:1;height:60px;resize:none}
+.idea{border-bottom:1px solid #e8ecf3;padding:10px 0}
+.idea .tx{font-weight:600;white-space:pre-wrap}
+.idea .meta{font-size:12px;color:#5b6679;display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}
+.tools{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.on-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#12b76a;margin-right:6px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#10203a;color:#fff;padding:10px 18px;border-radius:8px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h2 style="margin:0 0 6px">Вход для администратора</h2>
+  <div style="color:#5b6679;font-size:14px">Введите ADMIN_KEY (тот, что в переменных Render)</div>
+  <input id="k" type="password" placeholder="Ключ администратора" autocomplete="current-password">
+  <div id="le"></div>
+  <button class="btn" id="lb" style="width:100%">Войти</button>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <b>Проверка</b><span>Админ-панель</span>
+    <span class="sp"></span>
+    <span class="pill" id="onl">онлайн: 0</span>
+    <button class="btn sec sm" id="out">Выйти</button>
+  </header>
+  <nav id="tabs">
+    <button data-t="over" class="on">Обзор</button>
+    <button data-t="msg">Сообщения<i id="bm" hidden></i></button>
+    <button data-t="usr">Пользователи</button>
+    <button data-t="idea">Предложения</button>
+    <button data-t="req">Заявки на подписку</button>
+  </nav>
+  <main>
+    <section id="p-over"></section>
+
+    <section id="p-msg" hidden>
+      <div class="split">
+        <div class="list" id="tl"></div>
+        <div class="conv">
+          <div id="ch"><span style="color:#5b6679">Выберите диалог слева</span></div>
+          <div id="cm"></div>
+          <div class="send">
+            <textarea id="ci" placeholder="Ответ…"></textarea>
+            <button class="btn" id="cs">Отправить</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-usr" hidden>
+      <div class="tools">
+        <select id="fr"><option value="">Все</option><option value="teacher">Учителя</option><option value="student">Ученики</option></select>
+        <input id="fq" placeholder="Поиск по имени или email" style="min-width:240px">
+      </div>
+      <div class="box" id="ut"></div>
+    </section>
+
+    <section id="p-idea" hidden><div class="box" id="ideas"></div></section>
+    <section id="p-req" hidden><div class="box" id="reqs"></div></section>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+var KEY = sessionStorage.getItem('ak') || '', tab = 'over', cur = null, D = null, timer = null;
+
+function $(s) { return document.querySelector(s); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function fd(v) {
+  var d = new Date(v);
+  if (isNaN(d)) return String(v);
+  return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+function fv(v) {
+  if (v == null) return '';
+  if (typeof v === 'number' && v > 1e11) return fd(v);
+  if (typeof v === 'string' && /^\d{4}-\d\d-\d\d/.test(v)) return fd(v);
+  if (typeof v === 'object') return JSON.stringify(v);
+  return String(v);
+}
+function ago(s) { return s < 60 ? s + ' с' : Math.floor(s / 60) + ' мин'; }
+function roleName(r) { return r === 'teacher' ? 'Учитель' : r === 'student' ? 'Ученик' : r === 'guest' ? 'Гость' : (r || ''); }
+function toast(t) {
+  var e = $('#toast'); e.textContent = t; e.classList.add('show');
+  setTimeout(function () { e.classList.remove('show'); }, 3200);
+}
+
+function api(path, opt) {
+  opt = opt || {};
+  opt.headers = Object.assign({ 'x-admin-key': KEY, 'Content-Type': 'application/json' }, opt.headers || {});
+  return fetch(path, opt).then(function (r) {
+    return r.json().catch(function () { return {}; }).then(function (j) {
+      if (!r.ok) { var e = new Error(j.error || ('Ошибка ' + r.status)); e.status = r.status; throw e; }
+      return j;
+    });
+  });
+}
+
+function logout() {
+  sessionStorage.removeItem('ak'); KEY = '';
+  if (timer) clearInterval(timer);
+  $('#app').hidden = true; $('#login').hidden = false;
+}
+function enter(k) {
+  KEY = k;
+  return refresh().then(function () {
+    sessionStorage.setItem('ak', k);
+    $('#login').hidden = true; $('#app').hidden = false;
+    if (timer) clearInterval(timer);
+    timer = setInterval(function () {
+      if (document.hidden) return;
+      refresh().catch(function (e) { if (e.status === 401) logout(); });
+    }, 8000);
+  }).catch(function (e) { $('#le').textContent = e.message; KEY = ''; });
+}
+$('#lb').onclick = function () { $('#le').textContent = ''; enter($('#k').value.trim()); };
+$('#k').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#lb').click(); });
+$('#out').onclick = logout;
+
+function refresh() {
+  return api('/x/admin/overview').then(function (d) {
+    D = d; draw();
+    if (tab === 'msg' && cur) return loadThread(true);
+  });
+}
+
+function setTab(t) {
+  tab = t;
+  ['over', 'msg', 'usr', 'idea', 'req'].forEach(function (x) { $('#p-' + x).hidden = x !== t; });
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) {
+    b.classList.toggle('on', b.dataset.t === t);
+  });
+  if (t === 'msg' && cur) loadThread();
+}
+$('#tabs').addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (b) setTab(b.dataset.t);
+});
+
+function draw() {
+  var o = D.online, c = D.core || {}, us = c.users || [];
+  var T = us.filter(function (u) { return u.role === 'teacher'; }).length;
+  var S = us.filter(function (u) { return u.role === 'student'; }).length;
+
+  $('#onl').textContent = 'онлайн: ' + o.total;
+  document.title = (D.unread ? '(' + D.unread + ') ' : '') + 'Админ — Проверка';
+  var bm = $('#bm'); bm.hidden = !D.unread; bm.textContent = D.unread;
+
+  function cn(n, l) { return '<div class="c"><b>' + n + '</b><span>' + l + '</span></div>'; }
+  var h = '';
+  if (D.coreError) h += '<div class="warn">Не удалось получить список пользователей: ' + esc(D.coreError) + '</div>';
+  h += '<div class="cards">' +
+    cn(o.total, 'сейчас онлайн') + cn(o.teachers, 'учителей онлайн') + cn(o.students, 'учеников онлайн') + cn(o.guests, 'гостей онлайн') + '</div>';
+  h += '<div class="cards">' +
+    cn(T, 'учителей всего') + cn(S, 'учеников всего') + cn(D.unread, 'новых сообщений') +
+    cn((c.feedback || []).length, 'предложений') + cn((c.requests || []).length, 'заявок на подписку') + '</div>';
+  h += '<div class="box"><h3>Сейчас на сайте</h3>';
+  if (!o.list.length) h += '<div class="empty">Сейчас никого нет. Считаются только открытые вкладки сайта.</div>';
+  else {
+    h += '<table><tr><th>Кто</th><th>Роль</th><th>Где</th><th>Активность</th></tr>';
+    o.list.forEach(function (x) {
+      h += '<tr><td><span class="on-dot"></span>' + esc(x.name || x.email || 'Гость') + (x.email && x.name ? ' <span style="color:#5b6679">' + esc(x.email) + '</span>' : '') +
+        '</td><td>' + esc(roleName(x.role)) + '</td><td>' + esc(x.page) + '</td><td>' + ago(x.ago) + ' назад</td></tr>';
+    });
+    h += '</table>';
+  }
+  h += '</div><div style="color:#5b6679;font-size:13px">Онлайн — это те, у кого открыта вкладка сайта в последнюю минуту. Данные обновляются каждые 8 секунд.</div>';
+  $('#p-over').innerHTML = h;
+
+  // диалоги
+  $('#tl').innerHTML = D.threads.map(function (t) {
+    return '<div class="th' + (cur && cur.key === t.key ? ' on' : '') + '" data-k="' + esc(t.key) + '">' +
+      '<div class="nm">' + esc(t.name || t.email || 'Гость') + (t.unread ? '<i class="dot">' + t.unread + '</i>' : '') + '</div>' +
+      '<div class="sub">' + esc(roleName(t.role)) + (t.email ? ' · ' + esc(t.email) : '') + (t.contact ? ' · ' + esc(t.contact) : '') + '</div>' +
+      '<div class="last">' + esc(t.last) + '</div></div>';
+  }).join('') || '<div class="empty">Сообщений пока нет</div>';
+
+  drawUsers();
+
+  var fb = c.feedback || [];
+  $('#ideas').innerHTML = fb.length ? fb.map(card).join('') : '<div class="empty">Предложений пока нет</div>';
+  var rq = c.requests || [];
+  $('#reqs').innerHTML = rq.length ? rq.map(card).join('') : '<div class="empty">Заявок пока нет</div>';
+}
+
+function card(o) {
+  if (!o || typeof o !== 'object') return '<div class="idea"><div class="tx">' + esc(o) + '</div></div>';
+  var tk = ['text', 'message', 'idea', 'title', 'comment', 'body'].filter(function (k) { return o[k]; })[0];
+  var rest = Object.keys(o).filter(function (k) { return k !== tk && k !== 'id' && o[k] !== '' && o[k] != null; })
+    .map(function (k) { return '<span><b>' + esc(k) + ':</b> ' + esc(fv(o[k])) + '</span>'; }).join('');
+  return '<div class="idea">' + (tk ? '<div class="tx">' + esc(o[tk]) + '</div>' : '') + '<div class="meta">' + rest + '</div></div>';
+}
+
+function drawUsers() {
+  var us = ((D.core || {}).users || []).slice();
+  var fr = $('#fr').value, q = $('#fq').value.trim().toLowerCase();
+  var onl = {};
+  D.online.list.forEach(function (x) { if (x.email) onl[x.email] = 1; });
+  us = us.filter(function (u) {
+    if (fr && u.role !== fr) return false;
+    if (q && (String(u.email || '') + ' ' + String(u.name || '')).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+  if (!us.length) { $('#ut').innerHTML = '<div class="empty">Никого не найдено</div>'; return; }
+  var h = '<table><tr><th>Имя</th><th>Email</th><th>Роль</th><th>Тариф</th><th>Пароль</th><th>Создан</th><th></th></tr>';
+  us.forEach(function (u) {
+    var em = String(u.email || '').toLowerCase();
+    h += '<tr><td>' + (onl[em] ? '<span class="on-dot" title="онлайн"></span>' : '') + esc(u.name) + '</td><td>' + esc(u.email) + '</td><td>' + esc(roleName(u.role)) + '</td><td>' + esc(u.plan || '') +
+      '</td><td>' + (u.passwordOk === false ? '<span style="color:#d92d20">нужен сброс</span>' : 'ок') + '</td><td>' + esc(fv(u.created)) + '</td><td style="white-space:nowrap">' +
+      '<button class="btn sm" data-a="write" data-e="' + esc(u.email) + '" data-n="' + esc(u.name) + '" data-r="' + esc(u.role) + '">Написать</button> ' +
+      '<button class="btn sm sec" data-a="setpass" data-e="' + esc(u.email) + '">Пароль</button>' +
+      (u.role === 'teacher' ? ' <button class="btn sm sec" data-a="grant" data-e="' + esc(u.email) + '">Подписка</button> <button class="btn sm sec" data-a="revoke" data-e="' + esc(u.email) + '">Снять</button>' : '') +
+      '</td></tr>';
+  });
+  $('#ut').innerHTML = h + '</table>';
+}
+$('#fr').onchange = function () { if (D) drawUsers(); };
+$('#fq').oninput = function () { if (D) drawUsers(); };
+
+function doAct(action, email, extra) {
+  return api('/x/admin/act', { method: 'POST', body: JSON.stringify(Object.assign({ action: action, email: email }, extra || {})) })
+    .then(function (r) {
+      toast(r.ok ? 'Готово' : 'Ошибка: ' + JSON.stringify(r.result));
+      return refresh();
+    }).catch(function (e) { toast(e.message); });
+}
+$('#ut').addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (!b) return;
+  var a = b.dataset.a, em = b.dataset.e;
+  if (a === 'write') {
+    cur = { key: em, name: b.dataset.n, role: b.dataset.r, email: em };
+    setTab('msg'); loadThread();
+  } else if (a === 'setpass') {
+    var pw = prompt('Новый пароль для ' + em + ' (от 6 символов, латиница и цифры):');
+    if (pw) doAct('setpass', em, { password: pw });
+  } else if (a === 'grant') {
+    var d = prompt('На сколько дней выдать подписку? (0 — без срока)', '30');
+    if (d !== null) doAct('grant', em, { days: d });
+  } else if (a === 'revoke') {
+    if (confirm('Снять подписку у ' + em + '?')) doAct('revoke', em);
+  }
+});
+
+$('#tl').addEventListener('click', function (e) {
+  var el = e.target.closest('.th'); if (!el) return;
+  var t = D.threads.filter(function (x) { return x.key === el.dataset.k; })[0];
+  if (!t) return;
+  cur = { key: t.key, name: t.name, role: t.role, email: t.email, contact: t.contact };
+  loadThread().then(refresh);
+});
+
+function loadThread(silent) {
+  return api('/x/admin/thread?key=' + encodeURIComponent(cur.key)).then(function (j) {
+    var t = j.thread;
+    var who = (cur.name || cur.email || 'Гость');
+    $('#ch').innerHTML = '<span><b>' + esc(who) + '</b> <span style="color:#5b6679">' + esc(roleName(cur.role)) +
+      (cur.email ? ' · ' + esc(cur.email) : '') + (cur.contact ? ' · ' + esc(cur.contact) : '') + '</span></span>' +
+      (t ? '<button class="btn red sm" id="cd">Удалить диалог</button>' : '');
+    var box = $('#cm');
+    var near = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    box.innerHTML = (t && t.msgs.length ? t.msgs.map(function (m) {
+      return '<div class="m ' + (m.from === 'admin' ? 'a' : 'u') + '"><div>' + esc(m.text) + '</div><small>' + fd(m.t) + '</small></div>';
+    }).join('') : '<div class="empty">Диалога ещё нет — напишите первым.</div>');
+    if (!silent || near) box.scrollTop = box.scrollHeight;
+    var d = $('#cd');
+    if (d) d.onclick = function () {
+      if (!confirm('Удалить диалог целиком?')) return;
+      api('/x/admin/delete', { method: 'POST', body: JSON.stringify({ key: cur.key }) }).then(function () {
+        cur = null;
+        $('#ch').innerHTML = '<span style="color:#5b6679">Выберите диалог слева</span>';
+        $('#cm').innerHTML = '';
+        refresh();
+      });
+    };
+  }).catch(function (e) { if (!silent) toast(e.message); });
+}
+
+function sendReply() {
+  var t = $('#ci').value.trim();
+  if (!cur) return toast('Сначала выберите диалог');
+  if (!t) return;
+  api('/x/admin/reply', { method: 'POST', body: JSON.stringify({ key: cur.key, text: t, name: cur.name, role: cur.role }) })
+    .then(function () { $('#ci').value = ''; return loadThread().then(refresh); })
+    .catch(function (e) { toast(e.message); });
+}
+$('#cs').onclick = sendReply;
+$('#ci').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendReply(); });
+
+if (KEY) enter(KEY);
+</script>
+</body>
+</html>
