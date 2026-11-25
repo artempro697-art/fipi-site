@@ -1,99 +1,141 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Домашка ФИПИ</title>
+<title>ФИПИ Практикум — домашние работы с автопроверкой</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--blue:#007aff;--green:#34c759;--red:#ff3b30;--orange:#ff9500;--text:#1c1c1e;--sub:#8e8e93;--line:rgba(60,60,67,.12);--fill:rgba(118,118,128,.12)}
-body{margin:0;font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;color:var(--text);background:#f2f2f7;min-height:100vh}
-body:before{content:"";position:fixed;inset:0;z-index:-1;background:
-radial-gradient(600px 420px at 8% 0,rgba(0,122,255,.12),transparent),
-radial-gradient(520px 420px at 100% 15%,rgba(175,82,222,.09),transparent),
-radial-gradient(520px 420px at 40% 100%,rgba(52,199,89,.08),transparent)}
-.glass{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05)}
-.top{position:sticky;top:10px;z-index:20;margin:10px auto 0;max-width:780px;width:calc(100% - 24px);border-radius:18px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.brand{font-weight:600}
-.top .right{display:flex;align-items:center;gap:10px;font-size:14px}
-.wrap{max-width:780px;margin:0 auto;padding:14px 12px 110px}
-.card{border-radius:20px;padding:18px;margin-bottom:14px}
-h1{font-size:26px;margin:6px 0 4px;letter-spacing:-.4px}
-h2{font-size:19px;margin:0 0 12px;letter-spacing:-.2px}
+:root{--brand:#4f46e5;--brand2:#7c3aed;--brandd:#3730a3;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--ink:#0f172a;--sub:#64748b;--line:#e2e8f0;--bg:#f6f7fb;--card:#fff;--rad:16px}
+body{margin:0;font:15px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh}
+a{color:var(--brand);text-decoration:none}
+h1{font-size:34px;line-height:1.15;margin:0 0 14px;letter-spacing:-.8px;font-weight:800}
+h2{font-size:19px;margin:0 0 12px;letter-spacing:-.2px;font-weight:700}
 .muted{color:var(--sub)}.small{font-size:13px}
-a{color:var(--blue);text-decoration:none}
-input,textarea,select{width:100%;font:inherit;color:inherit;background:var(--fill);border:0;border-radius:12px;padding:11px 13px;margin-bottom:10px;outline:none}
-input:focus,textarea:focus,select:focus{box-shadow:0 0 0 2px rgba(0,122,255,.35)}
-textarea{resize:vertical;min-height:70px}
-input[type=checkbox]{width:20px;height:20px;margin:2px 0 0;accent-color:var(--blue);flex:none}
-label.lbl,.lbl{display:block;font-size:13px;color:var(--sub);margin:2px 4px 5px}
-.btn{display:inline-block;border:0;border-radius:12px;background:var(--blue);color:#fff;font:inherit;font-weight:600;padding:11px 18px;cursor:pointer;text-align:center;transition:.15s}
-.btn:hover{filter:brightness(1.07)}.btn:active{transform:scale(.97)}
-.btn.gray{background:var(--fill);color:var(--blue)}
-.btn.red{background:rgba(255,59,48,.12);color:var(--red)}
-.btn.small{padding:7px 12px;font-size:14px;border-radius:10px}
+.nav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav.dark{background:transparent;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;position:absolute;left:0;right:0}
+.navin{max-width:1080px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;color:var(--ink);letter-spacing:-.3px}
+.nav.dark .logo{color:#fff}
+.logomark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;box-shadow:0 4px 12px rgba(79,70,229,.35)}
+.navr{display:flex;align-items:center;gap:10px}
+.navlinks{display:flex;gap:22px;font-size:14px;font-weight:500}
+.nav.dark .navlinks a{color:rgba(255,255,255,.8)}
+@media(max-width:720px){.navlinks{display:none}}
+.uchip{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+.uchip b{font-size:14px}.uchip i{font-style:normal;font-size:12px;color:var(--sub)}
+.wrap{max-width:1080px;margin:0 auto;padding:22px 20px 90px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);padding:20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;background:var(--brand);color:#fff;font:inherit;font-weight:600;padding:10px 18px;cursor:pointer;transition:.15s;box-shadow:0 1px 2px rgba(79,70,229,.3)}
+.btn:hover{background:var(--brandd)}.btn:active{transform:scale(.98)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn.ghost:hover{background:#f1f5f9}
+.btn.gray{background:#eef2ff;color:var(--brand);box-shadow:none}
+.btn.gray:hover{background:#e0e7ff}
+.btn.red{background:#fef2f2;color:var(--bad);box-shadow:none}
+.btn.red:hover{background:#fee2e2}
+.btn.small{padding:7px 13px;font-size:13px;border-radius:9px}
 .btn.full{width:100%}
 .btn:disabled{opacity:.55;cursor:default}
-.ic{border:0;background:var(--fill);border-radius:9px;width:32px;height:32px;cursor:pointer;font-size:14px}
-.ic.red{color:var(--red)}
+.ic{border:1px solid var(--line);background:#fff;border-radius:9px;width:34px;height:34px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center}
+.ic:hover{background:#f1f5f9}.ic.red{color:var(--bad)}
+input,textarea,select{width:100%;font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:10px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+textarea{resize:vertical;min-height:64px}
+input[type=checkbox]{width:18px;height:18px;margin:2px 0 0;accent-color:var(--brand);flex:none}
+label.lbl,.lbl{display:block;font-size:13px;color:var(--sub);margin:2px 2px 6px;font-weight:500}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .row>input,.row>select{flex:1;margin:0;min-width:140px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:560px){.grid2{grid-template-columns:1fr}}
-.seg{display:flex;background:var(--fill);border-radius:12px;padding:3px;margin-bottom:14px;gap:2px}
-.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 6px;font:inherit;font-size:15px;cursor:pointer;color:var(--text)}
-.seg button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12);font-weight:600}
+.seg{display:flex;background:#eef1f6;border-radius:12px;padding:4px;margin-bottom:16px;gap:2px;overflow-x:auto}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 10px;font:inherit;font-size:14px;font-weight:500;cursor:pointer;color:var(--sub);white-space:nowrap}
+.seg button.on{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(15,23,42,.1)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat .n{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.stat .l{font-size:12px;color:var(--sub);font-weight:500;text-transform:uppercase;letter-spacing:.4px}
 .item{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
 .item:last-child{border-bottom:0}
 .item .t{font-weight:600}
-.trow{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.trow{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start}
 .trow:last-child{border-bottom:0}
 .tbody{flex:1;min-width:0}
 .tbody .tx{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;word-break:break-word}
 .acts{display:flex;gap:6px}
-.chip{display:inline-block;background:rgba(0,122,255,.1);color:var(--blue);border-radius:8px;padding:1px 8px;font-size:12px;margin-left:4px}
-.badge{display:inline-block;border-radius:8px;padding:2px 9px;font-size:12px;font-weight:600;margin-left:4px}
-.badge.g{background:rgba(52,199,89,.15);color:#1f9d42}
-.badge.o{background:rgba(255,149,0,.15);color:#c77700}
-.badge.r{background:rgba(255,59,48,.13);color:var(--red)}
-.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;width:calc(100% - 24px);max-width:600px;border-radius:18px;padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;z-index:30}
+.chip{display:inline-block;background:#eef2ff;color:var(--brand);border-radius:7px;padding:1px 8px;font-size:12px;margin-left:4px;font-weight:600}
+.badge{display:inline-block;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700}
+.badge.g{background:#f0fdf4;color:var(--ok)}
+.badge.o{background:#fffbeb;color:var(--warn)}
+.badge.r{background:#fef2f2;color:var(--bad)}
 details.card>summary,details.item>summary{cursor:pointer;list-style:none;font-weight:600}
 details>summary::-webkit-details-marker{display:none}
-details.card[open]>summary{margin-bottom:12px}
 .sum{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .score{font-weight:700;white-space:nowrap}
-.rv{border-radius:14px;padding:10px 12px;margin-top:8px;background:var(--fill)}
-.rv.ok{background:rgba(52,199,89,.1)}.rv.bad{background:rgba(255,59,48,.08)}
-.rvh{font-weight:600;font-size:13px;margin-bottom:2px}
-.rv.ok .rvh{color:#1f9d42}.rv.bad .rvh{color:var(--red)}
+.rv{border-radius:12px;padding:12px 14px;margin-top:8px;background:#f8fafc;border:1px solid var(--line)}
+.rv.ok{background:#f0fdf4;border-color:#bbf7d0}.rv.bad{background:#fef2f2;border-color:#fecaca}
+.rvh{font-weight:700;font-size:13px;margin-bottom:4px}
+.rv.ok .rvh{color:var(--ok)}.rv.bad .rvh{color:var(--bad)}
 .rvt{white-space:pre-wrap;word-break:break-word;margin-bottom:4px}
-.task .num{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
-.ttext{white-space:pre-wrap;word-break:break-word;margin-bottom:10px;font-size:17px}
-.timg,.thumb{max-width:100%;border-radius:12px;display:block;margin-bottom:10px}
+.task .num{font-size:12px;color:var(--brand);font-weight:800;margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px}
+.ttext{white-space:pre-wrap;word-break:break-word;margin-bottom:10px;font-size:16px}
+.timg,.thumb{max-width:100%;border-radius:10px;display:block;margin-bottom:10px;border:1px solid var(--line)}
 .thumb{max-height:60px;width:auto;margin:0}
 .opts{display:flex;flex-direction:column;gap:8px}
-.opt{border:2px solid transparent;background:var(--fill);border-radius:12px;padding:11px 14px;font:inherit;text-align:left;cursor:pointer}
-.opt.on{border-color:var(--blue);background:rgba(0,122,255,.1);font-weight:600}
-.timer{position:fixed;top:68px;right:14px;z-index:25;border-radius:14px;padding:7px 14px;font-weight:700;font-variant-numeric:tabular-nums}
-.timer.low{color:var(--red)}
+.opt{border:2px solid var(--line);background:#fff;border-radius:10px;padding:11px 14px;font:inherit;text-align:left;cursor:pointer}
+.opt:hover{border-color:#c7d2fe}
+.opt.on{border-color:var(--brand);background:#eef2ff;font-weight:600}
+.timer{position:fixed;top:70px;right:16px;z-index:25;border-radius:12px;padding:8px 16px;font-weight:800;font-variant-numeric:tabular-nums;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(15,23,42,.12)}
+.timer.low{color:var(--bad);border-color:#fecaca}
 .center{text-align:center}
-.big{font-size:54px;font-weight:700;letter-spacing:-1px;line-height:1.1}
-.auth{max-width:420px;margin:40px auto}
-.code{font-size:26px;font-weight:700;letter-spacing:3px;color:var(--blue)}
+.big{font-size:52px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+.auth{max-width:400px}
+.code{font-size:26px;font-weight:800;letter-spacing:3px;color:var(--brand)}
 .empty{text-align:center;color:var(--sub);padding:26px 0}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal{width:100%;max-width:440px;border-radius:22px;padding:20px;background:rgba(255,255,255,.9);max-height:92vh;overflow:auto}
-.toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:80;border-radius:14px;padding:10px 18px;font-size:15px;max-width:90%}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{width:100%;max-width:460px;border-radius:20px;padding:24px;background:#fff;max-height:92vh;overflow:auto}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:80;border-radius:12px;padding:11px 20px;font-size:14px;font-weight:600;max-width:90%;background:var(--ink);color:#fff;box-shadow:0 12px 32px rgba(15,23,42,.3)}
+.drop{border:2px dashed #c7d2fe;border-radius:14px;background:#eef2ff;padding:26px 18px;text-align:center;cursor:pointer;margin-bottom:14px;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.drop:hover,.drop.on{border-color:var(--brand);background:#e0e7ff}
+.dropic{font-size:30px}
+.linkbox{display:flex;gap:8px;margin:12px 0}
+.linkbox input{margin:0;flex:1;font-size:13px;color:var(--sub)}
+.hero{background:radial-gradient(900px 500px at 85% -10%,rgba(124,58,237,.5),transparent),radial-gradient(700px 400px at 0% 110%,rgba(79,70,229,.4),transparent),linear-gradient(135deg,#1e1b4b,#312e81 55%,#4c1d95);color:#fff;padding:120px 20px 80px;position:relative}
+.heroin{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:center}
+@media(max-width:860px){.heroin{grid-template-columns:1fr}.hero{padding-top:100px}}
+.hero h1{font-size:42px}
+@media(max-width:560px){.hero h1{font-size:30px}}
+.hero p.lead{font-size:17px;color:rgba(255,255,255,.78);margin:0 0 26px;max-width:520px}
+.herobadges{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.hbadge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600}
+.authcard{background:#fff;border-radius:20px;padding:26px;color:var(--ink);box-shadow:0 24px 64px rgba(0,0,0,.35)}
+.features{max-width:1080px;margin:0 auto;padding:64px 20px}
+.featgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+@media(max-width:860px){.featgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.featgrid{grid-template-columns:1fr}}
+.feat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+.feat .fi{width:42px;height:42px;border-radius:12px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.feat b{display:block;font-size:15px;margin-bottom:4px}
+.feat span{font-size:13px;color:var(--sub)}
+.steps{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stepsin{max-width:1080px;margin:0 auto;padding:64px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+@media(max-width:720px){.stepsin{grid-template-columns:1fr}}
+.step .sn{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.step b{display:block;margin-bottom:4px}
+.step span{font-size:14px;color:var(--sub)}
+.foot{max-width:1080px;margin:0 auto;padding:34px 20px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;color:var(--sub);font-size:13px}
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;width:calc(100% - 24px);max-width:620px;border-radius:14px;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;z-index:30;background:var(--ink);color:#fff;box-shadow:0 16px 40px rgba(15,23,42,.35)}
+.bar .btn.gray{background:rgba(255,255,255,.14);color:#fff}
 </style>
 </head>
 <body>
 <div id="app"></div>
-
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = ts => new Date(ts).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+const BRAND = '<span class="logomark">ФП</span>ФИПИ Практикум';
 
 async function api(url, method = 'GET', body) {
   const r = await fetch(url, {method, headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined});
@@ -104,7 +146,7 @@ async function api(url, method = 'GET', body) {
 }
 function toast(m) {
   const t = document.createElement('div');
-  t.className = 'toast glass';
+  t.className = 'toast';
   t.textContent = m;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2800);
@@ -113,7 +155,7 @@ function modal(html) {
   closeModal();
   const o = document.createElement('div');
   o.className = 'overlay'; o.id = 'modal';
-  o.innerHTML = '<div class="modal glass">' + html + '</div>';
+  o.innerHTML = '<div class="modal">' + html + '</div>';
   o.onclick = e => { if (e.target === o) closeModal(); };
   document.body.appendChild(o);
 }
@@ -126,11 +168,15 @@ let cfg = {}, me = null;
 let D = {tasks: [], homeworks: [], classes: []};
 let sel = new Set();
 
+function navHtml(dark) {
+  return '<div class="nav' + (dark ? ' dark' : '') + '"><div class="navin"><a class="logo" href="/">' + BRAND + '</a>' +
+    (dark ? '<div class="navlinks"><a href="#feat">Возможности</a><a href="#how">Как это работает</a></div>' : '') +
+    '<div class="navr">' +
+    (me ? '<span class="uchip"><b>' + esc(me.name) + '</b><i>' + (me.role === 'teacher' ? 'учитель' : 'ученик') + '</i></span><button class="btn ghost small" onclick="logout()">Выйти</button>' : (dark ? '<button class="btn small" onclick="var e=document.getElementById(\'em\');if(e)e.focus()">Войти</button>' : '')) +
+    '</div></div></div>';
+}
 function shell(html) {
-  $('#app').innerHTML =
-    '<div class="top glass"><div class="brand">📘 Домашка ФИПИ</div><div class="right">' +
-    (me ? '<span class="muted">' + esc(me.name) + ' · ' + (me.role === 'teacher' ? 'учитель' : 'ученик') + '</span><button class="btn small gray" onclick="logout()">Выйти</button>' : '') +
-    '</div></div><div class="wrap">' + html + '</div>';
+  $('#app').innerHTML = navHtml(false) + '<div class="wrap">' + html + '</div>';
   window.scrollTo(0, 0);
 }
 async function logout() {
@@ -150,24 +196,42 @@ function route() {
   if (me.role === 'teacher') teacherPage(); else studentPage();
 }
 
-/* ================= ВХОД / РЕГИСТРАЦИЯ ================= */
+/* ================= ГЛАВНАЯ / ВХОД ================= */
 let authMode = 'login', authRole = 'student';
 function authPage() {
   const reg = authMode === 'reg';
-  shell(
-    '<div class="card glass auth">' +
-    '<h1 class="center">' + (reg ? 'Регистрация' : 'Вход') + '</h1>' +
-    '<p class="muted center" style="margin-top:0">Домашки из заданий ФИПИ с автопроверкой</p>' +
+  $('#app').innerHTML =
+    navHtml(true) +
+    '<div class="hero"><div class="heroin"><div>' +
+    '<h1>Домашние работы по заданиям ФИПИ — с автопроверкой</h1>' +
+    '<p class="lead">Собирайте работы из скриншотов за минуту, выдавайте классу ссылкой или кодом и получайте подробную статистику по каждому заданию.</p>' +
+    '<div class="herobadges"><span class="hbadge">ЕГЭ и ОГЭ</span><span class="hbadge">Автопроверка</span><span class="hbadge">Таймер как на экзамене</span><span class="hbadge">Экспорт в Excel</span></div>' +
+    '</div><div class="authcard auth">' +
+    '<h2 class="center" style="font-size:22px">' + (reg ? 'Создать аккаунт' : 'Вход в кабинет') + '</h2>' +
     '<div class="seg"><button class="' + (!reg ? 'on' : '') + '" onclick="authMode=\'login\';authPage()">Войти</button>' +
-    '<button class="' + (reg ? 'on' : '') + '" onclick="authMode=\'reg\';authPage()">Зарегистрироваться</button></div>' +
+    '<button class="' + (reg ? 'on' : '') + '" onclick="authMode=\'reg\';authPage()">Регистрация</button></div>' +
     (reg ? '<div class="seg"><button class="' + (authRole === 'student' ? 'on' : '') + '" onclick="authRole=\'student\';authPage()">Я ученик</button>' +
       '<button class="' + (authRole === 'teacher' ? 'on' : '') + '" onclick="authRole=\'teacher\';authPage()">Я учитель</button></div>' +
       '<input id="nm" placeholder="Ваше имя" autocomplete="name">' : '') +
     '<input id="em" type="email" placeholder="Email" autocomplete="email">' +
     '<input id="pw" type="password" placeholder="Пароль (минимум 6 символов)" autocomplete="' + (reg ? 'new-password' : 'current-password') + '" onkeydown="if(event.key===\'Enter\')doAuth()">' +
     (reg && authRole === 'teacher' && cfg.inviteRequired ? '<input id="inv" placeholder="Код приглашения для учителей">' : '') +
-    '<button class="btn full" onclick="doAuth()">' + (reg ? 'Создать аккаунт' : 'Войти') + '</button></div>'
-  );
+    '<button class="btn full" onclick="doAuth()">' + (reg ? 'Создать аккаунт' : 'Войти') + '</button>' +
+    '<p class="muted small center" style="margin:12px 0 0">Ученикам аккаунт не обязателен — домашку можно решать по ссылке от учителя.</p>' +
+    '</div></div></div>' +
+    '<div class="features" id="feat"><h2 class="center" style="font-size:28px">Всё для регулярной практики</h2>' +
+    '<div class="featgrid">' +
+    '<div class="feat"><div class="fi">⚡</div><b>Автопроверка</b><span>Ответы сверяются мгновенно, ученик сразу видит разбор ошибок.</span></div>' +
+    '<div class="feat"><div class="fi">📷</div><b>Задания скриншотами</b><span>Вставьте картинки из вариантов ФИПИ — печатать условия не нужно.</span></div>' +
+    '<div class="feat"><div class="fi">⏱</div><b>Таймер и сроки</b><span>Ограничение по времени и дедлайны, как на настоящем экзамене.</span></div>' +
+    '<div class="feat"><div class="fi">📊</div><b>Аналитика</b><span>Процент верных по каждому заданию и выгрузка результатов в Excel.</span></div>' +
+    '</div></div>' +
+    '<div class="steps" id="how"><div class="stepsin">' +
+    '<div class="step"><div class="sn">1</div><b>Добавьте задания</b><span>Перетащите скриншоты и впишите ответы. Поддерживается импорт списком.</span></div>' +
+    '<div class="step"><div class="sn">2</div><b>Создайте домашку</b><span>Получите ссылку или выдайте работу классу по коду.</span></div>' +
+    '<div class="step"><div class="sn">3</div><b>Смотрите результаты</b><span>Кто сдал, кто нет, и где класс ошибается чаще всего.</span></div>' +
+    '</div></div>' +
+    '<div class="foot"><span>© 2026 ФИПИ Практикум</span><span>Проект не аффилирован с ФИПИ. Задания добавляются пользователями.</span></div>';
 }
 async function doAuth() {
   try {
@@ -185,7 +249,7 @@ async function doAuth() {
   } catch (e) { toast(e.message); }
 }
 
-/* ================= ОБЩЕЕ: разбор ================= */
+/* ================= ОБЩЕЕ ================= */
 function review(d, images) {
   return d.map((x, i) =>
     '<div class="rv ' + (x.ok ? 'ok' : 'bad') + '"><div class="rvh">' + (x.ok ? '✓' : '✕') + ' Задание ' + (i + 1) + '</div>' +
@@ -205,27 +269,32 @@ let stTab = 'todo';
 async function studentPage() {
   let d;
   try { d = await api('/api/my'); } catch (e) { return handleErr(e); }
+  const avg = d.done.length ? Math.round(d.done.reduce((s, x) => s + pct(x.score, x.total), 0) / d.done.length) : 0;
   const tabs = [['todo', 'К выполнению (' + d.todo.length + ')'], ['done', 'Выполнено (' + d.done.length + ')'], ['cls', 'Классы']];
-  let body = '';
+  let body = '<div class="stats">' +
+    '<div class="stat"><div class="n">' + d.todo.length + '</div><div class="l">К выполнению</div></div>' +
+    '<div class="stat"><div class="n">' + d.done.length + '</div><div class="l">Выполнено</div></div>' +
+    '<div class="stat"><div class="n">' + avg + '%</div><div class="l">Средний результат</div></div>' +
+    '<div class="stat"><div class="n">' + d.classes.length + '</div><div class="l">Мои классы</div></div></div>';
   if (stTab === 'todo') {
-    body += '<div class="card glass"><h2>Открыть домашку</h2><div class="row"><input id="lnk" placeholder="Вставьте ссылку от учителя" onkeydown="if(event.key===\'Enter\')openLink()"><button class="btn" onclick="openLink()">Открыть</button></div></div>';
-    body += '<div class="card glass">' + (d.todo.length ? d.todo.map(h =>
+    body += '<div class="card"><h2>Открыть домашку по ссылке</h2><div class="row"><input id="lnk" placeholder="Вставьте ссылку от учителя" onkeydown="if(event.key===\'Enter\')openLink()"><button class="btn" onclick="openLink()">Открыть</button></div></div>';
+    body += '<div class="card">' + (d.todo.length ? d.todo.map(h =>
       '<div class="item"><div><div class="t">' + esc(h.title) + '</div><div class="muted small">' + h.count + ' заданий' +
       (h.timeLimit ? ' · ⏱ ' + h.timeLimit + ' мин' : '') +
-      (h.deadline ? ' · <span style="color:' + (h.deadline < Date.now() ? 'var(--red)' : 'inherit') + '">до ' + fmt(h.deadline) + '</span>' : '') +
+      (h.deadline ? ' · <span style="color:' + (h.deadline < Date.now() ? 'var(--bad)' : 'inherit') + '">до ' + fmt(h.deadline) + '</span>' : '') +
       '</div></div><a class="btn small" href="/h/' + h.id + '">Решать</a></div>').join('')
       : '<div class="empty">Невыполненных домашек нет 🎉<br><span class="small">Новые появятся здесь, когда вы откроете ссылку или вступите в класс</span></div>') + '</div>';
   } else if (stTab === 'done') {
-    body += '<div class="card glass">' + (d.done.length ? d.done.map(s => {
+    body += '<div class="card">' + (d.done.length ? d.done.map(s => {
       const p = pct(s.score, s.total);
       return '<details class="item" style="display:block"><summary class="sum"><div><div class="t">' + esc(s.title) + '</div><div class="muted small">' + fmt(s.date) + flags(s) + '</div></div>' +
         '<div class="score"><span class="badge ' + pcls(p) + '">' + s.score + '/' + s.total + ' · ' + p + '%</span></div></summary>' +
         '<div style="margin-top:8px">' + review(s.details) + '</div></details>';
     }).join('') : '<div class="empty">Пока нет выполненных домашек</div>') + '</div>';
   } else {
-    body += '<div class="card glass"><h2>Вступить в класс</h2><div class="row"><input id="ccode" placeholder="Код класса от учителя" style="text-transform:uppercase" onkeydown="if(event.key===\'Enter\')joinClass()"><button class="btn" onclick="joinClass()">Вступить</button></div>' +
+    body += '<div class="card"><h2>Вступить в класс</h2><div class="row"><input id="ccode" placeholder="Код класса от учителя" style="text-transform:uppercase" onkeydown="if(event.key===\'Enter\')joinClass()"><button class="btn" onclick="joinClass()">Вступить</button></div>' +
       '<div class="muted small">Домашки, выданные классу, сами появятся в «К выполнению»</div></div>';
-    body += '<div class="card glass">' + (d.classes.length ? d.classes.map(c =>
+    body += '<div class="card">' + (d.classes.length ? d.classes.map(c =>
       '<div class="item"><div class="t">' + esc(c.name) + '</div><button class="btn small red" onclick="leaveClass(\'' + c.id + '\')">Выйти</button></div>').join('')
       : '<div class="empty">Вы пока не состоите в классах</div>') + '</div>';
   }
@@ -247,7 +316,7 @@ async function leaveClass(id) {
 }
 
 /* ================= УЧИТЕЛЬ ================= */
-let tTab = 'tasks';
+let tTab = 'build';
 async function teacherPage() {
   try {
     [D.tasks, D.homeworks, D.classes] = await Promise.all([api('/api/tasks'), api('/api/homeworks'), api('/api/classes')]);
@@ -255,8 +324,14 @@ async function teacherPage() {
   renderTeacher();
 }
 function renderTeacher() {
-  const tabs = [['tasks', 'Задания'], ['build', 'Быстрый вариант'], ['hw', 'Домашки'], ['cls', 'Классы']];
-  shell('<div class="seg">' + tabs.map(t => '<button class="' + (tTab === t[0] ? 'on' : '') + '" onclick="tTab=\'' + t[0] + '\';renderTeacher()">' + t[1] + '</button>').join('') + '</div><div id="tabbody"></div>');
+  const totalSubs = D.homeworks.reduce((s, h) => s + h.submitted, 0);
+  const tabs = [['build', 'Создать домашку'], ['tasks', 'Задания (' + D.tasks.length + ')'], ['hw', 'Домашки (' + D.homeworks.length + ')'], ['cls', 'Классы']];
+  shell('<div class="stats">' +
+    '<div class="stat"><div class="n">' + D.tasks.length + '</div><div class="l">Заданий в базе</div></div>' +
+    '<div class="stat"><div class="n">' + D.homeworks.length + '</div><div class="l">Домашек создано</div></div>' +
+    '<div class="stat"><div class="n">' + totalSubs + '</div><div class="l">Работ сдано</div></div>' +
+    '<div class="stat"><div class="n">' + D.classes.length + '</div><div class="l">Классов</div></div></div>' +
+    '<div class="seg">' + tabs.map(t => '<button class="' + (tTab === t[0] ? 'on' : '') + '" onclick="tTab=\'' + t[0] + '\';renderTeacher()">' + t[1] + '</button>').join('') + '</div><div id="tabbody"></div>');
   if (tTab === 'tasks') tTasks(); else if (tTab === 'build') tBuild(); else if (tTab === 'hw') tHw(); else tClasses();
 }
 
@@ -295,17 +370,17 @@ document.addEventListener('paste', e => {
 function tTasks() {
   editId = null; formImage = '';
   $('#tabbody').innerHTML =
-    '<div class="card glass"><h2 id="ftitle">Новое задание</h2>' +
+    '<div class="card"><h2 id="ftitle">Новое задание</h2>' +
     '<textarea id="f_text" rows="3" placeholder="Условие задания"></textarea>' +
     '<div class="grid2"><input id="f_ans" placeholder="Ответ (можно несколько через |)"><input id="f_topic" placeholder="Тема или № задания (необязательно)"></div>' +
     '<input id="f_opts" placeholder="Варианты ответа через ; (необязательно — ученик выберет кнопкой)">' +
     '<div class="row"><label class="btn gray small">🖼 Картинка<input type="file" accept="image/*" id="f_img" hidden></label><span class="muted small">или вставьте скриншот через Ctrl+V</span><span id="f_prev"></span></div>' +
-    '<div class="row"><button class="btn" id="f_save" onclick="saveTask()">Добавить</button><button class="btn gray" id="f_cancel" style="display:none" onclick="tTasks()">Отмена</button></div></div>' +
-    '<details class="card glass"><summary>Импорт списком</summary>' +
-    '<p class="muted small" style="margin-top:0">Одно задание на строке: <b>условие ; ответ ; тема</b>. Тему можно не писать. Из Excel можно просто скопировать две колонки и вставить сюда.</p>' +
+    '<div class="row"><button class="btn" id="f_save" onclick="saveTask()">Добавить</button><button class="btn ghost" id="f_cancel" style="display:none" onclick="tTasks()">Отмена</button></div></div>' +
+    '<details class="card"><summary>Импорт списком</summary>' +
+    '<p class="muted small" style="margin-top:8px">Одно задание на строке: <b>условие ; ответ ; тема</b>. Из Excel можно скопировать две колонки и вставить сюда.</p>' +
     '<textarea id="b_text" rows="5" placeholder="Сколько будет 2+2? ; 4 ; Арифметика"></textarea>' +
     '<input id="b_topic" placeholder="Общая тема для всех (необязательно)"><button class="btn" onclick="bulkAdd()">Импортировать</button></details>' +
-    '<div class="card glass"><div class="row"><input id="q" placeholder="Поиск по заданиям" oninput="renderTList()"><select id="qt" onchange="renderTList()"></select></div>' +
+    '<div class="card"><div class="row"><input id="q" placeholder="Поиск по заданиям" oninput="renderTList()"><select id="qt" onchange="renderTList()"></select></div>' +
     '<div class="row"><button class="btn small gray" onclick="selVisible()">Выбрать все найденные</button><span class="muted small" id="tcount"></span></div>' +
     '<div id="tlist"></div></div><div id="bar"></div>';
   $('#f_img').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
@@ -335,7 +410,7 @@ function toggleSel(id, on) { if (on) sel.add(id); else sel.delete(id); updateBar
 function selVisible() { filtered().forEach(t => sel.add(t.id)); renderTList(); updateBar(); }
 function updateBar() {
   const b = $('#bar'); if (!b) return;
-  b.innerHTML = sel.size ? '<div class="bar glass"><b>Выбрано: ' + sel.size + '</b><div class="row" style="margin:0"><button class="btn small gray" onclick="sel.clear();renderTList();updateBar()">Сбросить</button><button class="btn small" onclick="hwModal()">Создать домашку</button></div></div>' : '';
+  b.innerHTML = sel.size ? '<div class="bar"><b>Выбрано: ' + sel.size + '</b><div class="row" style="margin:0"><button class="btn small gray" onclick="sel.clear();renderTList();updateBar()">Сбросить</button><button class="btn small" onclick="hwModal()">Создать домашку</button></div></div>' : '';
 }
 async function saveTask() {
   const b = {text: $('#f_text').value, answer: $('#f_ans').value, topic: $('#f_topic').value,
@@ -349,7 +424,7 @@ async function saveTask() {
       D.tasks.unshift(await api('/api/tasks', 'POST', b));
       toast('Добавлено');
     }
-    const keep = $('#q').value;
+    const keep = $('#q') ? $('#q').value : '';
     tTasks(); $('#q').value = keep; renderTList();
   } catch (e) { handleErr(e); }
 }
@@ -382,19 +457,31 @@ function hwModal() {
     D.classes.map(c => '<option value="' + c.id + '">Класс: ' + esc(c.name) + '</option>').join('') + '</select>' +
     '<div class="lbl">Срок сдачи (необязательно)</div><input type="datetime-local" id="m_dl">' +
     '<div class="lbl">Ограничение по времени, минут (0 — без ограничения)</div><input type="number" id="m_tl" min="0" max="300" value="0">' +
-    '<div class="row"><button class="btn" onclick="createHw()">Создать</button><button class="btn gray" onclick="closeModal()">Отмена</button></div>');
+    '<div class="row"><button class="btn" onclick="createHw()">Создать</button><button class="btn ghost" onclick="closeModal()">Отмена</button></div>');
 }
 async function createHw() {
   const dl = $('#m_dl').value ? new Date($('#m_dl').value).getTime() : null;
   try {
-    await api('/api/homeworks', 'POST', {
+    const created = await api('/api/homeworks', 'POST', {
       title: $('#m_title').value, classId: $('#m_class').value || null, deadline: dl, timeLimit: $('#m_tl').value,
       taskIds: D.tasks.filter(t => sel.has(t.id)).map(t => t.id)
     });
     sel.clear(); closeModal();
     D.homeworks = await api('/api/homeworks');
-    tTab = 'hw'; renderTeacher(); toast('Домашка создана — скопируйте ссылку');
+    tTab = 'hw'; renderTeacher(); hwLinkModal(created.id);
   } catch (e) { toast(e.message); }
+}
+function hwLinkModal(id) {
+  const link = location.origin + '/h/' + id;
+  modal('<h2>Домашка создана 🎉</h2><p class="muted" style="margin-top:-6px">Отправьте ссылку ученикам. Она также доступна во вкладке «Домашки».</p>' +
+    '<div class="linkbox"><input readonly value="' + link + '" id="mlink" onclick="this.select()"><button class="btn" onclick="copyInput()">Скопировать</button></div>' +
+    '<div class="row" style="margin:0"><a class="btn gray" target="_blank" href="/h/' + id + '">Открыть предпросмотр</a><button class="btn ghost" onclick="closeModal()">Готово</button></div>');
+}
+function copyInput() {
+  const el = $('#mlink'); if (!el) return;
+  el.select();
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(el.value).then(() => toast('Ссылка скопирована'), () => prompt('Скопируйте ссылку:', el.value));
+  else { try { document.execCommand('copy'); toast('Ссылка скопирована'); } catch (e) { prompt('Скопируйте ссылку:', el.value); } }
 }
 
 /* ---------- Быстрый вариант ---------- */
@@ -405,55 +492,74 @@ function freeRow() {
   if (!r) { r = newRow(); B.push(r); }
   return r;
 }
+function saveDraft() {
+  try { localStorage.setItem('fipi_draft', JSON.stringify({title: $('#b_title') ? $('#b_title').value : '', rows: B})); }
+  catch (e) { try { localStorage.setItem('fipi_draft', JSON.stringify({title: '', rows: B.map(r => ({img: '', text: r.text, ans: r.ans, opts: r.opts}))})); } catch (e2) {} }
+}
+function loadDraft() {
+  try {
+    const d = JSON.parse(localStorage.getItem('fipi_draft') || 'null');
+    if (d && d.rows && d.rows.length) { B = d.rows; return d.title || ''; }
+  } catch (e) {}
+  return '';
+}
 function tBuild() {
-  if (!B.length) B = [newRow()];
+  let draftTitle = '';
+  if (!B.length) { B = [newRow()]; draftTitle = loadDraft(); if (B.length && !(B.length === 1 && !B[0].img && !B[0].text)) {} else B = [newRow()]; }
   $('#tabbody').innerHTML =
-    '<div class="card glass"><h2>Быстрый вариант</h2>' +
-    '<p class="muted small" style="margin-top:0">Для ЕГЭ и ОГЭ: нажмите «12 заданий» или «19 заданий». Скопируйте скриншот (Win+Shift+S) и нажмите <b>Ctrl+V</b> — картинка встанет в первое пустое задание. Условие писать не нужно, если оно на картинке.</p>' +
-    '<input id="b_title" placeholder="Название (например, ЕГЭ профиль, вариант 1)">' +
+    '<div class="card"><h2>Быстрое создание домашки</h2>' +
+    '<div class="drop" id="drop"><div class="dropic">📷</div><b>Перетащите скриншоты заданий сюда</b><span class="muted small">или нажмите Ctrl+V — каждая картинка станет отдельным заданием. Печатать условия не нужно.</span></div>' +
+    '<input id="b_title" placeholder="Название (например, ЕГЭ профиль, вариант 1)" value="' + esc(draftTitle) + '" oninput="saveDraft()">' +
     '<div class="row"><button class="btn small gray" onclick="addRows(1)">+ задание</button>' +
     '<button class="btn small gray" onclick="addRows(12)">12 заданий</button>' +
     '<button class="btn small gray" onclick="addRows(19)">19 заданий</button>' +
-    '<label class="btn small gray">🖼 Несколько картинок<input type="file" accept="image/*" multiple hidden onchange="manyFiles(this)"></label>' +
-    '<button class="btn small red" onclick="if(confirm(\'Очистить всё?\')){B=[];tBuild()}">Очистить</button></div></div>' +
+    '<label class="btn small gray">🖼 Выбрать файлы<input type="file" accept="image/*" multiple hidden onchange="manyFiles(this)"></label>' +
+    '<button class="btn small red" onclick="if(confirm(\'Очистить всё?\')){B=[];saveDraft();tBuild()}">Очистить</button></div></div>' +
     '<div id="brows"></div>' +
-    '<div class="card glass"><div class="lbl">Кому выдать</div><select id="b_class"><option value="">Всем, у кого есть ссылка</option>' +
+    '<div class="card"><div class="lbl">Кому выдать</div><select id="b_class"><option value="">Всем, у кого есть ссылка</option>' +
     D.classes.map(c => '<option value="' + c.id + '">Класс: ' + esc(c.name) + '</option>').join('') + '</select>' +
-    '<div class="lbl">Срок сдачи (необязательно)</div><input type="datetime-local" id="b_dl">' +
-    '<div class="lbl">Ограничение по времени, минут (0 — без ограничения)</div><input type="number" id="b_tl" min="0" max="300" value="0">' +
+    '<div class="grid2"><div><div class="lbl">Срок сдачи</div><input type="datetime-local" id="b_dl"></div>' +
+    '<div><div class="lbl">Время, минут (0 — без)</div><input type="number" id="b_tl" min="0" max="300" value="0"></div></div>' +
     '<button class="btn full" id="b_go" onclick="createBuild()">Создать домашку</button></div>';
+  const dz = $('#drop');
+  if (dz) {
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('on'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('on'));
+    dz.addEventListener('drop', async e => { e.preventDefault(); dz.classList.remove('on'); const fs = [...e.dataTransfer.files].filter(f => f.type.indexOf('image/') === 0); for (const f of fs) { try { freeRow().img = await readImage(f); } catch (err) {} } renderRows(); saveDraft(); });
+    dz.addEventListener('click', () => { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; i.multiple = true; i.onchange = async () => { for (const f of i.files) { try { freeRow().img = await readImage(f); } catch (e) {} } renderRows(); saveDraft(); }; i.click(); });
+  }
   renderRows();
 }
 function addRows(n) {
   if (n === 1) B.push(newRow());
   else while (B.length < n) B.push(newRow());
-  renderRows();
+  renderRows(); saveDraft();
 }
 function renderRows() {
   const box = $('#brows'); if (!box) return;
   box.innerHTML = B.map((r, i) =>
-    '<div class="card glass"><div class="sum"><b>Задание ' + (i + 1) + '</b><button class="ic red" onclick="B.splice(' + i + ',1);renderRows()">✕</button></div>' +
+    '<div class="card"><div class="sum"><b>Задание ' + (i + 1) + '</b><button class="ic red" onclick="B.splice(' + i + ',1);renderRows();saveDraft()">✕</button></div>' +
     '<div class="row" style="margin-top:8px"><label class="btn gray small">🖼 Картинка<input type="file" accept="image/*" hidden onchange="rowFile(' + i + ',this)"></label>' +
-    (r.img ? '<img class="thumb" src="' + r.img + '" style="max-height:90px"><button class="ic" onclick="B[' + i + '].img=\'\';renderRows()">✕</button>' : '<span class="muted small">или Ctrl+V</span>') + '</div>' +
-    '<textarea rows="2" placeholder="Условие (можно не писать, если есть картинка)" oninput="B[' + i + '].text=this.value">' + esc(r.text) + '</textarea>' +
-    '<div class="grid2"><input placeholder="Ответ (можно несколько через |)" value="' + esc(r.ans) + '" oninput="B[' + i + '].ans=this.value">' +
-    '<input placeholder="Варианты через ; (необязательно)" value="' + esc(r.opts) + '" oninput="B[' + i + '].opts=this.value"></div></div>'
+    (r.img ? '<img class="thumb" src="' + r.img + '" style="max-height:90px"><button class="ic" onclick="B[' + i + '].img=\'\';renderRows();saveDraft()">✕</button>' : '<span class="muted small">или Ctrl+V</span>') + '</div>' +
+    '<textarea rows="2" placeholder="Условие (можно не писать, если есть картинка)" oninput="B[' + i + '].text=this.value;saveDraft()">' + esc(r.text) + '</textarea>' +
+    '<div class="grid2"><input placeholder="Ответ (можно несколько через |)" value="' + esc(r.ans) + '" oninput="B[' + i + '].ans=this.value;saveDraft()">' +
+    '<input placeholder="Варианты через ; (необязательно)" value="' + esc(r.opts) + '" oninput="B[' + i + '].opts=this.value;saveDraft()"></div></div>'
   ).join('');
 }
 async function rowFile(i, inp) {
   const f = inp.files[0]; if (!f) return;
-  try { B[i].img = await readImage(f); renderRows(); } catch (e) { toast('Не удалось загрузить картинку'); }
+  try { B[i].img = await readImage(f); renderRows(); saveDraft(); } catch (e) { toast('Не удалось загрузить картинку'); }
 }
 async function manyFiles(inp) {
   for (const f of inp.files) { try { freeRow().img = await readImage(f); } catch (e) {} }
-  inp.value = ''; renderRows();
+  inp.value = ''; renderRows(); saveDraft();
 }
 document.addEventListener('paste', async e => {
   if (!$('#brows') || !e.clipboardData) return;
   const it = [...e.clipboardData.items].find(i => i.type.indexOf('image/') === 0);
   if (!it) return;
   e.preventDefault();
-  try { freeRow().img = await readImage(it.getAsFile()); renderRows(); } catch (err) { toast('Не удалось загрузить картинку'); }
+  try { freeRow().img = await readImage(it.getAsFile()); renderRows(); saveDraft(); } catch (err) { toast('Не удалось загрузить картинку'); }
 });
 async function createBuild() {
   let last = -1;
@@ -479,17 +585,18 @@ async function createBuild() {
       });
       D.tasks.unshift(t); ids.push(t.id);
     }
-    await api('/api/homeworks', 'POST', {title, classId: $('#b_class').value || null, deadline: dl, timeLimit: $('#b_tl').value, taskIds: ids});
-    B = [];
+    const created = await api('/api/homeworks', 'POST', {title, classId: $('#b_class').value || null, deadline: dl, timeLimit: $('#b_tl').value, taskIds: ids});
+    B = []; saveDraft();
     D.homeworks = await api('/api/homeworks');
-    tTab = 'hw'; renderTeacher(); toast('Домашка создана — скопируйте ссылку');
+    tTab = 'hw'; renderTeacher(); hwLinkModal(created.id);
   } catch (e) { btn.disabled = false; btn.textContent = 'Создать домашку'; handleErr(e); }
 }
 
 /* ---------- Домашки ---------- */
 function tHw() {
-  $('#tabbody').innerHTML = D.homeworks.length ? D.homeworks.map(h =>
-    '<div class="card glass"><div class="t" style="font-weight:600;font-size:18px">' + esc(h.title) + '</div>' +
+  $('#tabbody').innerHTML = '<div class="row"><button class="btn" onclick="tTab=\'build\';renderTeacher()">+ Новая домашка</button></div>' +
+    (D.homeworks.length ? D.homeworks.map(h =>
+    '<div class="card"><div class="t" style="font-weight:700;font-size:17px">' + esc(h.title) + '</div>' +
     '<div class="muted small" style="margin:3px 0 12px">' + h.count + ' заданий · сдали: ' + h.submitted +
     (h.className ? ' · класс «' + esc(h.className) + '»' : '') +
     (h.timeLimit ? ' · ⏱ ' + h.timeLimit + ' мин' : '') +
@@ -498,7 +605,7 @@ function tHw() {
     '<a class="btn small gray" target="_blank" href="/h/' + h.id + '">Предпросмотр</a>' +
     '<button class="btn small gray" onclick="showResults(\'' + h.id + '\')">Результаты</button>' +
     '<button class="btn small red" onclick="delHw(\'' + h.id + '\')">Удалить</button></div></div>'
-  ).join('') : '<div class="card glass empty">Домашек пока нет.<br>Откройте «Быстрый вариант» или отметьте задания галочками.</div>';
+  ).join('') : '<div class="card empty">Домашек пока нет.<br>Нажмите «+ Новая домашка», чтобы создать первую за минуту.</div>');
 }
 function copyLink(id) {
   const link = location.origin + '/h/' + id;
@@ -521,24 +628,24 @@ async function showResults(id) {
       arr.push({i, p: Math.round(ok / r.results.length * 100)});
     }
     arr.sort((a, b) => a.p - b.p);
-    hard = '<div class="card glass"><h2>Процент верных по заданиям</h2>' + arr.map(a =>
+    hard = '<div class="card"><h2>Процент верных по заданиям</h2>' + arr.map(a =>
       '<div class="item"><div style="min-width:0">' +
       (r.taskImages && r.taskImages[a.i] ? '<img class="thumb" src="' + r.taskImages[a.i] + '" style="margin-bottom:6px">' : '') +
       '<div class="small muted">Задание ' + (a.i + 1) + '</div><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px">' + esc(r.taskTexts[a.i]) + '</div></div><span class="badge ' + pcls(a.p) + '">' + a.p + '%</span></div>').join('') + '</div>';
   }
   $('#tabbody').innerHTML =
-    '<button class="btn small gray" style="margin-bottom:12px" onclick="renderTeacher()">← Назад</button>' +
-    '<div class="card glass"><h2>' + esc(r.title) + '</h2><div class="muted" style="margin-bottom:10px">Сдали: ' + r.results.length + ' · средний результат: ' + r.avg + '%</div>' +
+    '<button class="btn small ghost" style="margin-bottom:12px" onclick="renderTeacher()">← Назад</button>' +
+    '<div class="card"><h2>' + esc(r.title) + '</h2><div class="muted" style="margin-bottom:10px">Сдали: ' + r.results.length + ' · средний результат: ' + r.avg + '%</div>' +
     (r.results.length ? '<a class="btn small gray" href="/api/homeworks/' + id + '/export">⬇ Скачать для Excel</a>' : '') + '</div>' +
-    (r.missing.length ? '<div class="card glass"><h2>Не сдали</h2><div>' + r.missing.map(esc).join(', ') + '</div></div>' : '') +
+    (r.missing.length ? '<div class="card"><h2>Не сдали</h2><div>' + r.missing.map(esc).join(', ') + '</div></div>' : '') +
     (r.results.length ? r.results.map(s => {
       const p = pct(s.score, s.total);
-      return '<details class="card glass"><summary class="sum"><div><b>' + esc(s.name) + '</b>' + (s.registered ? '' : ' <span class="muted small">(гость)</span>') +
+      return '<details class="card"><summary class="sum"><div><b>' + esc(s.name) + '</b>' + (s.registered ? '' : ' <span class="muted small">(гость)</span>') +
         '<div class="muted small" style="font-weight:400">' + fmt(s.date) + flags(s) + '</div></div>' +
         '<span class="badge ' + pcls(p) + '">' + s.score + '/' + s.total + ' · ' + p + '%</span></summary>' +
         review(s.details, r.taskImages) +
         '<div style="margin-top:12px"><button class="btn small red" onclick="resetSub(\'' + s.id + '\',\'' + id + '\')">Сбросить попытку</button></div></details>';
-    }).join('') : '<div class="card glass empty">Пока никто не сдал</div>') + hard;
+    }).join('') : '<div class="card empty">Пока никто не сдал</div>') + hard;
 }
 async function resetSub(sid, hid) {
   if (!confirm('Удалить результат, чтобы ученик мог пройти домашку заново?')) return;
@@ -548,16 +655,16 @@ async function resetSub(sid, hid) {
 /* ---------- Классы ---------- */
 function tClasses() {
   $('#tabbody').innerHTML =
-    '<div class="card glass"><h2>Новый класс</h2><div class="row"><input id="cn" placeholder="Например, 9Б" onkeydown="if(event.key===\'Enter\')addClass()"><button class="btn" onclick="addClass()">Создать</button></div>' +
+    '<div class="card"><h2>Новый класс</h2><div class="row"><input id="cn" placeholder="Например, 9Б" onkeydown="if(event.key===\'Enter\')addClass()"><button class="btn" onclick="addClass()">Создать</button></div>' +
     '<div class="muted small">Ученики вводят код класса в своём кабинете, и домашки для класса появляются у них сами.</div></div>' +
     (D.classes.length ? D.classes.map(c =>
-      '<div class="card glass"><div class="sum"><h2 style="margin:0">' + esc(c.name) + '</h2><button class="btn small red" onclick="delClass(\'' + c.id + '\')">Удалить класс</button></div>' +
+      '<div class="card"><div class="sum"><h2 style="margin:0">' + esc(c.name) + '</h2><button class="btn small red" onclick="delClass(\'' + c.id + '\')">Удалить класс</button></div>' +
       '<div class="lbl" style="margin-top:10px">Код для учеников</div><div class="code">' + esc(c.code) + '</div>' +
       '<div class="lbl" style="margin-top:12px">Ученики (' + c.students.length + ')</div>' +
       (c.students.length ? c.students.map(s =>
         '<div class="item"><div>' + esc(s.name) + ' <span class="muted small">' + esc(s.email) + '</span></div><button class="ic red" onclick="rmStudent(\'' + c.id + '\',\'' + s.id + '\')">✕</button></div>').join('')
         : '<div class="muted small">Пока никого</div>') + '</div>'
-    ).join('') : '<div class="card glass empty">Классов пока нет</div>');
+    ).join('') : '<div class="card empty">Классов пока нет</div>');
 }
 async function reloadClasses() { D.classes = await api('/api/classes'); tClasses(); }
 async function addClass() {
@@ -575,44 +682,44 @@ async function rmStudent(cid, sid) {
 /* ================= СТРАНИЦА ДОМАШКИ ================= */
 let H = null, T = [], ans = {}, endAt = 0, timerId = null, submitted = false;
 async function hwPage(id) {
-  shell('<div class="card glass empty">Загрузка…</div>');
+  shell('<div class="card empty">Загрузка…</div>');
   ans = {}; submitted = false;
   try { H = await api('/api/hw/' + id); }
-  catch (e) { shell('<div class="card glass center"><h2>Упс</h2><p>' + esc(e.message) + '</p><a class="btn" href="/">На главную</a></div>'); return; }
+  catch (e) { shell('<div class="card center"><h2>Упс</h2><p>' + esc(e.message) + '</p><a class="btn" href="/">На главную</a></div>'); return; }
   renderHw();
 }
 function resultCard(r) {
   const p = pct(r.score, r.total);
-  return '<div class="card glass center"><div class="muted">Ваш результат</div><div class="big" style="color:var(--' + (p >= 80 ? 'green' : p >= 50 ? 'orange' : 'red') + ')">' + r.score + ' из ' + r.total + '</div>' +
+  return '<div class="card center"><div class="muted">Ваш результат</div><div class="big" style="color:var(--' + (p >= 80 ? 'ok' : p >= 50 ? 'warn' : 'bad') + ')">' + r.score + ' из ' + r.total + '</div>' +
     '<div class="muted">' + p + '% · ' + fmt(r.date) + flags(r) + '</div>' +
     (H.role === 'guest' ? '<p class="muted small">Вы не вошли, поэтому результат нигде не сохранён. <a href="#" onclick="goLogin();return false">Войти</a></p>' : '') +
     '<div style="margin-top:14px"><a class="btn" href="/">' + (me ? 'В кабинет' : 'На главную') + '</a></div></div>' +
-    '<div class="card glass"><h2>Разбор</h2>' + review(r.details) + '</div>';
+    '<div class="card"><h2>Разбор</h2>' + review(r.details) + '</div>';
 }
 function goLogin() { sessionStorage.setItem('back', location.pathname); location.href = '/'; }
 function renderHw() {
   if (timerId) { clearInterval(timerId); timerId = null; }
-  const head = '<div class="card glass"><a class="muted small" href="/">← ' + (me ? 'В кабинет' : 'На главную') + '</a><h1>' + esc(H.title) + '</h1>' +
+  const head = '<div class="card"><a class="muted small" href="/">← ' + (me ? 'В кабинет' : 'На главную') + '</a><h1 style="margin-top:8px">' + esc(H.title) + '</h1>' +
     '<div class="muted">' + H.count + ' заданий' + (H.timeLimit ? ' · ⏱ ' + H.timeLimit + ' мин' : '') + (H.deadline ? ' · срок до ' + fmt(H.deadline) : '') + '</div></div>';
   if (H.mine) return shell(head + resultCard(H.mine));
   const guestNote = H.role === 'guest' ?
-    '<div class="card glass"><b>Вы не вошли в аккаунт.</b><div class="muted small" style="margin:3px 0 10px">Можно решать как гость, но результат не сохранится в кабинете.</div><button class="btn small" onclick="goLogin()">Войти или зарегистрироваться</button></div>' : '';
+    '<div class="card"><b>Вы не вошли в аккаунт.</b><div class="muted small" style="margin:3px 0 10px">Можно решать как гость, но результат не сохранится в кабинете.</div><button class="btn small" onclick="goLogin()">Войти или зарегистрироваться</button></div>' : '';
   if (H.needStart) {
-    return shell(head + guestNote + '<div class="card glass center"><p>На выполнение даётся <b>' + H.timeLimit + ' мин</b>. Таймер начнётся после нажатия кнопки и не останавливается, даже если закрыть страницу.</p><button class="btn" onclick="startHw()">Начать</button></div>');
+    return shell(head + guestNote + '<div class="card center"><p>На выполнение даётся <b>' + H.timeLimit + ' мин</b>. Таймер начнётся после нажатия кнопки и не останавливается, даже если закрыть страницу.</p><button class="btn" onclick="startHw()">Начать</button></div>');
   }
   T = H.tasks;
   const teacher = H.role === 'teacher';
   shell(head +
-    (teacher ? '<div class="card glass"><b>Предпросмотр.</b> <span class="muted">Так задания видят ученики. Ответы здесь не сохраняются.</span></div>' : guestNote) +
-    (H.timeLimit && !teacher ? '<div class="timer glass" id="timer">⏱ --:--</div>' : '') +
+    (teacher ? '<div class="card"><b>Предпросмотр.</b> <span class="muted">Так задания видят ученики. Ответы здесь не сохраняются.</span></div>' : guestNote) +
+    (H.timeLimit && !teacher ? '<div class="timer" id="timer">⏱ --:--</div>' : '') +
     T.map((t, k) =>
-      '<div class="card glass task"><div class="num">Задание ' + (k + 1) + '</div><div class="ttext">' + esc(t.text) + '</div>' +
+      '<div class="card task"><div class="num">Задание ' + (k + 1) + '</div><div class="ttext">' + esc(t.text) + '</div>' +
       (t.image ? '<img class="timg" src="' + t.image + '">' : '') +
       (t.options && t.options.length ?
         '<div class="opts">' + t.options.map((o, i) => '<button class="opt" data-k="' + k + '" onclick="pick(' + k + ',' + i + ')">' + esc(o) + '</button>').join('') + '</div>' :
         '<input placeholder="Ваш ответ" autocomplete="off" oninput="ans[T[' + k + '].id]=this.value">') + '</div>'
     ).join('') +
-    (teacher ? '' : '<div class="card glass">' +
+    (teacher ? '' : '<div class="card">' +
       (H.role === 'guest' ? '<input id="gname" placeholder="Ваше имя">' : '') +
       '<button class="btn full" onclick="submitHw()">Сдать</button></div>'));
   if (H.timeLimit && !teacher) {
