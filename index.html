@@ -5,86 +5,106 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Проверка — домашние задания по ФИПИ с автопроверкой</title>
 <style>
-:root{--bg:#f2f4f8;--card:rgba(255,255,255,.72);--line:rgba(60,60,67,.14);--tx:#1c1c1e;--mut:#6b7280;--blue:#0a84ff;--green:#2ba36b;--red:#e5484d;--r:20px}
+:root{--bg:#f3f5f8;--line:#dde2ea;--tx:#141c2b;--mut:#5d6878;--navy:#10203a;--blue:#1d5fc4;--green:#1b7a52;--red:#b93a32;--r:10px}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;color:var(--tx);background:var(--bg);min-height:100vh}
-body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(600px 420px at 8% 0,#cfe3ff 0,transparent 70%),radial-gradient(520px 420px at 95% 8%,#e6d9ff 0,transparent 70%),radial-gradient(620px 500px at 50% 100%,#d6f5e8 0,transparent 70%)}
-h1,h2,h3{margin:0 0 10px;letter-spacing:-.02em;line-height:1.15}
-h1{font-size:44px}h2{font-size:24px}h3{font-size:17px}
+body{margin:0;font:15px/1.55 "Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;color:var(--tx);background:var(--bg);min-height:100vh}
+h1,h2,h3{margin:0 0 10px;letter-spacing:-.01em;line-height:1.2}
+h1{font-size:42px;font-weight:700}h2{font-size:22px}h3{font-size:17px}
 p{margin:0 0 10px}
 a{color:var(--blue)}
-.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
 .row{display:flex;align-items:center;gap:12px}.gap{gap:10px}.wrapr{flex-wrap:wrap}.sp{flex:1}
 .muted{color:var(--mut)}.small{font-size:13px}.c{text-align:center}
-.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.65);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff}
 .top .row{height:60px}
+.top .muted{color:#aebbd0}
+.top .btn.sec{background:rgba(255,255,255,.12);color:#fff}
+.top .pill{background:rgba(255,255,255,.14);color:#fff}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
-.logo small{display:block;color:var(--mut);font-size:11px;line-height:1.1}
-.lg{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#0a84ff,#5e5ce6);color:#fff;display:grid;place-items:center;font-weight:700}
-.card{background:var(--card);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.75);box-shadow:0 8px 30px rgba(20,30,60,.07);border-radius:var(--r);padding:22px;margin:16px 0}
-.btn{appearance:none;border:0;background:var(--blue);color:#fff;font:inherit;font-weight:600;padding:11px 18px;border-radius:12px;cursor:pointer;text-decoration:none;display:inline-block;transition:.15s}
-.btn:hover{filter:brightness(1.08)}
-.btn.sec{background:rgba(120,120,128,.14);color:var(--tx)}
-.btn.danger{background:rgba(229,72,77,.12);color:var(--red)}
-.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px}
-.btn.big{padding:14px 26px;font-size:16px}
-input,select,textarea{font:inherit;color:inherit;width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.85);outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,132,255,.15)}
-textarea{min-height:80px;resize:vertical}
+.logo small{display:block;color:#9fb0cc;font-size:11px;line-height:1.1}
+.lg{width:34px;height:34px;border-radius:8px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:800}
+.card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,32,58,.04);border-radius:var(--r);padding:22px;margin:0 0 16px}
+.btn{appearance:none;border:0;background:var(--blue);color:#fff;font:inherit;font-weight:600;padding:10px 18px;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block;transition:.15s}
+.btn:hover{filter:brightness(1.1)}
+.btn.sec{background:#e8ecf2;color:var(--tx)}
+.btn.danger{background:#f8e6e4;color:var(--red)}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn.big{padding:13px 26px;font-size:16px}
+input,select,textarea{font:inherit;color:inherit;width:100%;padding:10px 12px;border-radius:8px;border:1px solid #c9d0db;background:#fff;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,95,196,.15)}
+textarea{min-height:90px;resize:vertical}
 label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px}
-.seg{display:inline-flex;background:rgba(120,120,128,.14);border-radius:12px;padding:3px;gap:2px}
-.seg button{border:0;background:transparent;font:inherit;padding:8px 14px;border-radius:9px;cursor:pointer;color:var(--tx)}
-.seg button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12);font-weight:600}
-.pill{display:inline-block;padding:3px 10px;border-radius:99px;background:rgba(10,132,255,.12);color:var(--blue);font-size:12px;font-weight:600}
-.pill.g{background:rgba(43,163,107,.14);color:var(--green)}.pill.r{background:rgba(229,72,77,.12);color:var(--red)}
-.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center;padding:50px 0 10px}
-.hero .lead{font-size:18px;color:#444;max-width:520px}
+.seg{display:inline-flex;flex-wrap:wrap;background:#e8ecf2;border-radius:9px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font:inherit;padding:8px 14px;border-radius:7px;cursor:pointer;color:var(--tx)}
+.seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;background:#e3edfb;color:var(--blue);font-size:12px;font-weight:600}
+.pill.g{background:#dcf1e6;color:var(--green)}.pill.r{background:#f8e6e4;color:var(--red)}.pill.w{background:rgba(255,255,255,.14);color:#fff}
+.band{background:linear-gradient(180deg,#10203a,#1a3560);color:#fff}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;padding:56px 0 52px}
+.hero .lead{font-size:18px;color:#c9d4e6;max-width:540px}
 .bul{list-style:none;padding:0;margin:18px 0}.bul li{padding:5px 0 5px 28px;position:relative}
 .bul li:before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:700}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}
-.tile{background:var(--card);border:1px solid rgba(255,255,255,.75);border-radius:18px;padding:16px;text-align:center;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.tile b{display:block;font-size:30px;letter-spacing:-.02em}.tile span{color:var(--mut);font-size:13px}
-.section{padding:42px 0 6px}
-.kicker{color:var(--blue);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
-.h-sec{font-size:30px;margin:6px 0 18px}
+.band .bul li:before{color:#7fd6ab}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:0 0 16px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.tile b{display:block;font-size:28px;letter-spacing:-.02em;color:var(--navy)}.tile span{color:var(--mut);font-size:13px}
+.section{padding:44px 0 6px}
+.kicker{color:var(--blue);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.h-sec{font-size:28px;margin:6px 0 18px}
 .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.feat{background:var(--card);border:1px solid rgba(255,255,255,.75);border-radius:18px;padding:20px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.feat .n{width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:700;margin-bottom:10px}
-.faq details{background:var(--card);border:1px solid rgba(255,255,255,.75);border-radius:14px;padding:14px 18px;margin:8px 0}
+.feat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.feat .n{width:32px;height:32px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;margin-bottom:10px}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;margin:8px 0}
 .faq summary{cursor:pointer;font-weight:600}
 .faq p{margin:8px 0 0;color:#444}
-.cta{background:linear-gradient(135deg,#0a84ff,#5e5ce6);color:#fff;border-radius:24px;padding:34px;text-align:center;margin:40px 0 10px}
-.cta .btn{background:#fff;color:var(--blue)}
-.foot{border-top:1px solid var(--line);margin-top:50px;padding:30px 0 40px;background:rgba(255,255,255,.5)}
+.cta{background:var(--navy);color:#fff;border-radius:14px;padding:36px;text-align:center;margin:44px 0 10px}
+.cta .btn{background:#fff;color:var(--navy)}
+.foot{background:var(--navy);color:#fff;margin-top:50px;padding:34px 0 40px}
 .foot .cols{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:24px}
-.foot a{display:block;color:var(--mut);text-decoration:none;padding:2px 0}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0}
-.tabs button{border:0;background:rgba(120,120,128,.12);font:inherit;padding:9px 16px;border-radius:12px;cursor:pointer}
-.tabs button.on{background:var(--blue);color:#fff;font-weight:600}
+.foot a{display:block;color:#aebbd0;text-decoration:none;padding:2px 0}
+.foot .muted{color:#aebbd0}
+.cab{display:grid;grid-template-columns:240px 1fr;gap:24px;padding:24px 0 0;align-items:start}
+.side{position:sticky;top:78px;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px}
+.side .who{display:flex;gap:10px;align-items:center;padding:8px 8px 14px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.av{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.side button{display:block;width:100%;text-align:left;border:0;background:transparent;font:inherit;padding:10px 12px;border-radius:7px;cursor:pointer;color:var(--tx)}
+.side button:hover{background:#eef1f6}
+.side button.on{background:var(--navy);color:#fff;font-weight:600}
 .codebar{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-.code{font-size:30px;font-weight:700;letter-spacing:.12em;color:var(--blue)}
+.code{font-size:30px;font-weight:700;letter-spacing:.12em;color:var(--navy)}
+.chk{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.chk:last-child{border:0}
+.chk .dot{width:30px;height:30px;border-radius:50%;background:#e8ecf2;display:grid;place-items:center;font-weight:700;flex:none}
+.chk.done .dot{background:var(--green);color:#fff}
+.idea{border:1px solid var(--line);border-radius:var(--r);padding:14px;background:#fafbfd}
 .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:16px 0}
-.slot{position:relative;border:2px dashed var(--line);border-radius:14px;padding:8px;background:rgba(255,255,255,.55);cursor:pointer}
+.slot{position:relative;border:2px dashed #c3cbd8;border-radius:10px;padding:8px;background:#fafbfd;cursor:pointer}
 .slot.sel{border-color:var(--blue)}
-.slot img{width:100%;height:90px;object-fit:contain;background:#fff;border-radius:8px;display:block}
+.slot img{width:100%;height:90px;object-fit:contain;background:#fff;border-radius:6px;display:block}
 .slot .ph{height:90px;display:grid;place-items:center;color:var(--mut);font-size:13px}
 .slot .sn{position:absolute;top:4px;left:8px;font-weight:700;font-size:12px;color:var(--mut);z-index:1}
 .slot .x{position:absolute;top:4px;right:6px;border:0;background:rgba(0,0,0,.55);color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;line-height:1}
 .slot input{margin-top:6px;padding:7px 9px;font-size:13px}
 .item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
 .item:last-child{border:0}
-.thumb{width:70px;height:46px;object-fit:contain;background:#fff;border-radius:8px}
+.thumb{width:70px;height:46px;object-fit:contain;background:#fff;border-radius:6px;border:1px solid var(--line)}
 .task{padding:16px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}
-.task img{max-width:100%;border-radius:10px;background:#fff;display:block;margin:8px 0}
+.task img{max-width:100%;border-radius:8px;background:#fff;display:block;margin:8px 0;border:1px solid var(--line)}
 .ok{color:var(--green)}.bad{color:var(--red)}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500;font-size:13px}
-.ov{position:fixed;inset:0;background:rgba(20,20,30,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:50;display:grid;place-items:center;padding:20px}
-.modal{background:#fff;border-radius:22px;padding:26px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1c1c1e;color:#fff;padding:11px 18px;border-radius:12px;z-index:99;max-width:90vw}
-.timer{position:sticky;top:68px;z-index:5;float:right;background:#fff;border-radius:12px;padding:6px 14px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.1)}
-.warn{background:rgba(255,159,10,.14);border-radius:14px;padding:12px 16px;color:#8a5a00}
-@media(max-width:820px){.hero,.cols3,.foot .cols{grid-template-columns:1fr}h1{font-size:34px}.hide-s{display:none}.stats{grid-template-columns:1fr}}
+.ov{position:fixed;inset:0;background:rgba(16,32,58,.5);z-index:50;display:grid;place-items:center;padding:20px}
+.modal{background:#fff;border-radius:14px;padding:26px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 18px;border-radius:8px;z-index:99;max-width:90vw}
+.timer{position:sticky;top:68px;z-index:5;float:right;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-weight:700}
+.warn{background:#fff4dc;border-radius:8px;padding:12px 16px;color:#7a5200}
+@media(max-width:860px){
+.hero,.cols3,.foot .cols{grid-template-columns:1fr}h1{font-size:32px}.hide-s{display:none}
+.cab{grid-template-columns:1fr}
+.side{position:static;display:flex;overflow-x:auto;gap:4px;padding:6px}
+.side .who{display:none}
+.side button{white-space:nowrap;width:auto}
+}
 </style>
 </head>
 <body>
@@ -93,9 +113,27 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 6px;
 const $=s=>document.querySelector(s);
 const app=$('#app');
 const PRICE='299 ₽ в месяц'; // ← поставьте свою цену
+/* форматы экзаменов: n — число заданий, short — сколько из них с кратким ответом */
+const EX={
+  p12:{label:'ЕГЭ профиль · часть 1',n:12,short:12},
+  p19:{label:'ЕГЭ профиль · полный вариант',n:19,short:12},
+  b21:{label:'ЕГЭ база',n:21,short:21}
+};
+const IDEAS=[
+  ['Онлайн-оплата подписки','Оплата картой без ручного включения'],
+  ['ОГЭ и другие предметы','Готовые шаблоны вариантов'],
+  ['Печать и PDF','Вариант на бумаге и бланк ответов'],
+  ['Статистика по темам','Какие темы западают у класса'],
+  ['Напоминания ученикам','Уведомления о новых домашках'],
+  ['Срок сдачи','Дедлайн у каждой домашки'],
+  ['Разбор решений','Пояснение к каждому заданию'],
+  ['Установка как приложение','Иконка на экране телефона']
+];
 let me=null,cfg={},stats={teachers:0,students:0,freeLeft:0,freeLimit:20};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fdate=t=>new Date(t).toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'});
+const fdate=t=>t?new Date(t).toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'}):'—';
+const fday=t=>t?new Date(t).toLocaleDateString('ru-RU'):'—';
+function hello(){const h=new Date().getHours();return h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер'}
 function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),3500)}
 function A(f){return function(...a){Promise.resolve().then(()=>f(...a)).catch(e=>{if(e.status!==402)toast(e.message==='Failed to fetch'?'Нет связи с сервером':e.message)})}}
 async function api(p,m,b){
@@ -121,6 +159,9 @@ function foot(){
   return `<footer class="foot"><div class="wrap cols"><div><div class="logo"><span class="lg">П</span><b>Проверка</b></div><p class="muted small" style="margin-top:10px;max-width:380px">Независимый сервис для учителей и учеников. Использует задания из открытого банка ФИПИ. Не является официальным сервисом ФИПИ.</p></div><div><b>Разделы</b><a href="/#how">Как это работает</a><a href="/#who">Для кого</a><a href="/#price">Тарифы</a><a href="/#faq">Вопросы</a></div><div><b>Сейчас на сайте</b><span class="muted small">Учителей: ${stats.teachers}<br>Учеников: ${stats.students}</span></div></div></footer>`;
 }
 function layout(html){app.innerHTML=head()+'<main class="wrap">'+html+'</main>'+foot()}
+function cab(items,cur,fn,html){
+  layout(`<div class="cab"><aside class="side"><div class="who"><div class="av">${esc(me.name.slice(0,1).toUpperCase())}</div><div><b>${esc(me.name)}</b><div class="muted small">${me.role==='teacher'?'Учитель':'Ученик'}</div></div></div>${items.map(i=>`<button class="${cur===i[0]?'on':''}" onclick="${fn}('${i[0]}')">${i[1]}</button>`).join('')}</aside><section id="tc" style="min-width:0">${html}</section></div>`);
+}
 const doLogout=A(async()=>{await api('/api/logout','POST');me=null;location.href='/'});
 
 /* ---------- главная ---------- */
@@ -133,7 +174,7 @@ function authHtml(){
   <label>Пароль</label><input id="a_pass" type="password" autocomplete="${reg?'new-password':'current-password'}" placeholder="Минимум 6 символов" onkeydown="if(event.key==='Enter')doAuth()">
   ${reg&&authRole==='teacher'&&cfg.inviteRequired?`<label>Код приглашения</label><input id="a_inv" placeholder="Выдаёт администратор">`:''}
   <button class="btn" style="width:100%;margin-top:16px" onclick="doAuth()">${reg?'Создать аккаунт':'Войти'}</button>
-  ${reg&&authRole==='teacher'?`<p class="small muted c" style="margin-top:10px">${stats.freeLeft>0?`Бесплатных мест осталось: <b>${stats.freeLeft}</b> из ${stats.freeLimit}`:'Бесплатные места закончились — доступна подписка'}</p>`:''}`;
+  ${reg&&authRole==='teacher'?`<p class="small muted c" style="margin:10px 0 0">${stats.freeLeft>0?`Бесплатных мест осталось: <b>${stats.freeLeft}</b> из ${stats.freeLimit}`:'Бесплатные места закончились — доступна подписка'}</p>`:''}`;
 }
 function setAuth(m){authMode=m;$('#auth').innerHTML=authHtml()}
 function setRole(r){authRole=r;$('#auth').innerHTML=authHtml()}
@@ -147,27 +188,28 @@ const doAuth=A(async()=>{
   if(reg&&me.role==='teacher')welcome();
 });
 function welcome(){
-  modal(`<h2>Добро пожаловать!</h2><p class="muted">Ваш код учителя:</p><div class="code c">${esc(me.teacherCode)}</div><p class="small muted">Передайте его ученикам: на сайте они выбирают «Классы», вводят код — и попадают в ваш класс. Код всегда виден в кабинете.</p>${me.active?`<p class="pill g">Бесплатный доступ: вы №${me.seq} из ${stats.freeLimit}</p>`:`<p class="warn">Бесплатные места закончились. Чтобы создавать домашки, оформите подписку.</p>`}<div class="row" style="margin-top:14px"><button class="btn sec" onclick="copyText('${esc(me.teacherCode)}')">Копировать код</button><button class="btn" onclick="closeModal()">Понятно</button></div>`);
+  modal(`<h2>Добро пожаловать!</h2><p class="muted">Ваш код учителя:</p><div class="code c">${esc(me.teacherCode)}</div><p class="small muted">Передайте его ученикам: на сайте они открывают «Классы», вводят код — и попадают в ваш класс. Код всегда виден в кабинете.</p>${me.active?`<p><span class="pill g">Бесплатный доступ: вы №${me.seq} из ${stats.freeLimit}</span></p>`:`<p class="warn">Бесплатные места закончились. Чтобы создавать домашки, оформите подписку.</p>`}<div class="row" style="margin-top:14px"><button class="btn sec" onclick="copyText('${esc(me.teacherCode)}')">Копировать код</button><button class="btn" onclick="closeModal()">Понятно</button></div>`);
 }
 function landing(){
-  layout(`<section class="hero"><div><span class="pill">Бесплатно для первых ${stats.freeLimit} учителей</span><h1 style="margin-top:14px">Домашнее задание проверяет себя само</h1><p class="lead">Соберите вариант из заданий открытого банка ФИПИ за пару минут, отправьте ученикам ссылку и сразу получите результаты и разбор ошибок.</p><ul class="bul"><li>Быстрый вариант из скриншотов — 12 или 19 заданий</li><li>Автопроверка кратких ответов, баллы и разбор</li><li>Кабинет ученика: выполненные и невыполненные</li></ul></div><div class="card" id="auth" style="margin:0">${authHtml()}</div></section>
-  <div class="stats"><div class="tile"><b>${stats.teachers}</b><span>учителей</span></div><div class="tile"><b>${stats.students}</b><span>учеников</span></div><div class="tile"><b>${stats.freeLeft}</b><span>бесплатных мест осталось</span></div></div>
+  app.innerHTML=head()+`<section class="band"><div class="wrap hero"><div><span class="pill w">Бесплатно для первых ${stats.freeLimit} учителей</span><h1 style="margin-top:14px">Домашнее задание проверяет себя само</h1><p class="lead">Соберите вариант из заданий открытого банка ФИПИ за пару минут, отправьте ученикам ссылку и сразу получите результаты и разбор ошибок.</p><ul class="bul"><li>Быстрый вариант из скриншотов: ЕГЭ профиль (12 или 19 заданий) и ЕГЭ база (21)</li><li>Автопроверка кратких ответов, баллы и разбор</li><li>Кабинет ученика: выполненные и невыполненные</li></ul></div><div class="card" id="auth" style="margin:0">${authHtml()}</div></div></section><main class="wrap">
+  <div class="stats" style="margin-top:24px"><div class="tile"><b>${stats.teachers}</b><span>учителей</span></div><div class="tile"><b>${stats.students}</b><span>учеников</span></div><div class="tile"><b>${stats.freeLeft}</b><span>бесплатных мест осталось</span></div></div>
 
-  <section class="section" id="how"><div class="kicker">Как это работает</div><h2 class="h-sec">Три шага до первой домашки</h2><div class="cols3"><div class="feat"><div class="n">1</div><h3>Соберите вариант</h3><p class="muted">Вставьте скриншоты заданий через Ctrl+V и впишите ответы — или выберите задания из своего банка.</p></div><div class="feat"><div class="n">2</div><h3>Отправьте ссылку</h3><p class="muted">Ссылка работает на любом устройстве. Можно привязать домашку к классу или дать ограничение по времени.</p></div><div class="feat"><div class="n">3</div><h3>Смотрите результаты</h3><p class="muted">Баллы, средний результат, задания с наибольшим числом ошибок и список тех, кто не сдал.</p></div></div></section>
+  <section class="section" id="how"><div class="kicker">Как это работает</div><h2 class="h-sec">Три шага до первой домашки</h2><div class="cols3"><div class="feat"><div class="n">1</div><h3>Соберите вариант</h3><p class="muted">Вставьте скриншоты заданий через Ctrl+V и впишите ответы — или выберите задания из своего банка.</p></div><div class="feat"><div class="n">2</div><h3>Отправьте ссылку</h3><p class="muted">Ссылка работает на любом устройстве. Домашку можно привязать к классу и ограничить по времени.</p></div><div class="feat"><div class="n">3</div><h3>Смотрите результаты</h3><p class="muted">Баллы, средний результат, задания с наибольшим числом ошибок и список тех, кто не сдал.</p></div></div></section>
 
-  <section class="section" id="who"><div class="kicker">Для кого</div><h2 class="h-sec">Учителям, ученикам и репетиторам</h2><div class="cols3"><div class="feat"><h3>Учителям</h3><p class="muted">Меньше ручной проверки. Результаты по каждому заданию и выгрузка в Excel.</p></div><div class="feat"><h3>Ученикам</h3><p class="muted">Все домашки в одном месте, баллы и разбор после сдачи — видно, где были ошибки.</p></div><div class="feat"><h3>Репетиторам</h3><p class="muted">Свой код учителя и классы для каждой группы. Сдают и без регистрации — по ссылке с именем.</p></div></div></section>
+  <section class="section" id="who"><div class="kicker">Для кого</div><h2 class="h-sec">Учителям, ученикам и репетиторам</h2><div class="cols3"><div class="feat"><h3>Учителям</h3><p class="muted">Меньше ручной проверки. Результаты по каждому заданию и выгрузка в Excel.</p></div><div class="feat"><h3>Ученикам</h3><p class="muted">Все домашки в одном месте, баллы и разбор после сдачи — видно, где были ошибки.</p></div><div class="feat"><h3>Репетиторам</h3><p class="muted">Свой код учителя и классы для каждой группы. Сдавать можно и без регистрации — по ссылке, указав имя.</p></div></div></section>
 
   <section class="section" id="price"><div class="kicker">Тарифы</div><h2 class="h-sec">Первым ${stats.freeLimit} учителям — бесплатно</h2><div class="cols3"><div class="feat"><h3>Ученикам</h3><p><b style="font-size:26px">0 ₽</b></p><p class="muted">Всегда бесплатно</p></div><div class="feat"><h3>Первые ${stats.freeLimit} учителей</h3><p><b style="font-size:26px">0 ₽</b></p><p class="muted">Полный доступ. Осталось мест: ${stats.freeLeft}</p></div><div class="feat"><h3>Подписка</h3><p><b style="font-size:26px">${esc(PRICE)}</b></p><p class="muted">Для учителей после первых ${stats.freeLimit}</p></div></div></section>
 
   <section class="section" id="faq"><div class="kicker">Вопросы</div><h2 class="h-sec">Частые вопросы</h2><div class="faq">
   <details><summary>Это официальный сервис ФИПИ?</summary><p>Нет. «Проверка» — независимый инструмент. Мы используем задания из открытого банка ФИПИ, которые учитель добавляет сам.</p></details>
   <details><summary>Проверяется ли часть 2 ЕГЭ?</summary><p>Нет. Автоматически проверяются только краткие ответы. Задания с развёрнутым ответом учитель проверяет сам.</p></details>
+  <details><summary>Какие экзамены поддерживаются?</summary><p>Сейчас готовые форматы: ЕГЭ профильного уровня (часть 1 или полный вариант) и ЕГЭ базового уровня. Ответы автопроверка сверяет с тем, что вписал учитель.</p></details>
   <details><summary>Сколько это стоит?</summary><p>Ученикам — бесплатно. Первые ${stats.freeLimit} учителей получают бесплатный доступ, дальше нужна подписка.</p></details>
   <details><summary>Нужна ли ученику регистрация?</summary><p>Решать можно по ссылке, указав имя. Чтобы сохранялась история и работал кабинет, лучше зарегистрироваться как ученик.</p></details>
-  <details><summary>Что с данными и паролями?</summary><p>Пароли хранятся в виде хэшей, мы не продаём данные и не показываем их посторонним.</p></details>
+  <details><summary>Что с данными и паролями?</summary><p>Пароли хранятся в виде хэшей, мы не продаём данные и не показываем их посторонним. Аккаунт можно удалить в настройках.</p></details>
   </div></section>
 
-  <div class="cta"><h2>Попробуйте на своём классе</h2><p>Регистрация занимает минуту.</p><a class="btn big" href="#auth">Создать аккаунт</a></div>`);
+  <div class="cta"><h2>Попробуйте на своём классе</h2><p>Регистрация занимает минуту.</p><a class="btn big" href="#auth">Создать аккаунт</a></div></main>`+foot();
 }
 
 /* ---------- подписка ---------- */
@@ -177,47 +219,99 @@ function paywall(){
 }
 const doSub=A(async()=>{await api('/api/subscribe','POST',{contact:$('#sub_c').value});toast('Заявка отправлена. Мы свяжемся с вами.')});
 
+/* ---------- общие разделы: аккаунт и пожелания ---------- */
+function redrawCab(){if(me.role==='teacher')shell();else sview()}
+function accHtml(){
+  const t=me.role==='teacher';
+  const plan=me.plan==='free'?`<span class="pill g">Бесплатный доступ · вы №${me.seq} из ${stats.freeLimit}</span>`:me.plan==='pro'?`<span class="pill g">Подписка ${me.proUntil?'до '+fday(me.proUntil):'без ограничения срока'}</span>`:'<span class="pill r">Нет активного тарифа</span>';
+  return `<div class="card"><h2>Профиль</h2><p class="muted small">Роль: ${t?'учитель':'ученик'} · дата регистрации: ${fday(me.created)}</p><label>Имя</label><div class="row gap"><input id="ac_n" value="${esc(me.name)}" maxlength="40"><button class="btn" onclick="accName()">Сохранить</button></div></div>
+  <div class="card"><h2>Email для входа</h2><p class="muted small">Сейчас: <b>${esc(me.email)}</b></p><div class="row gap wrapr"><div style="flex:1;min-width:200px"><label>Новый email</label><input id="ac_e" type="email" autocomplete="off"></div><div style="flex:1;min-width:200px"><label>Текущий пароль</label><input id="ac_ep" type="password" autocomplete="off"></div></div><button class="btn" style="margin-top:14px" onclick="accEmail()">Изменить email</button></div>
+  <div class="card"><h2>Пароль</h2><div class="row gap wrapr"><div style="flex:1;min-width:180px"><label>Текущий пароль</label><input id="ac_op" type="password" autocomplete="off"></div><div style="flex:1;min-width:180px"><label>Новый пароль</label><input id="ac_np" type="password" autocomplete="new-password"></div><div style="flex:1;min-width:180px"><label>Повторите новый</label><input id="ac_np2" type="password" autocomplete="new-password"></div></div><p class="small muted" style="margin-top:8px">После смены пароля вы останетесь в системе здесь, а на других устройствах нужно будет войти заново.</p><button class="btn" onclick="accPass()">Сменить пароль</button></div>
+  ${t?`<div class="card"><h2>Тариф и код учителя</h2><p>${plan}</p><div class="codebar"><div><div class="muted small">Код учителя</div><div class="code">${esc(me.teacherCode)}</div></div><button class="btn sec sm" onclick="copyText('${esc(me.teacherCode)}')">Копировать</button></div></div>`:''}
+  <div class="card"><h2>Выход и удаление</h2><div class="row"><button class="btn sec" onclick="doLogout()">Выйти из аккаунта</button></div><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><h3 class="bad">Удалить аккаунт</h3><p class="muted small">${t?'Будут удалены ваши задания, домашки, классы и все результаты учеников по ним.':'Будут удалены ваши результаты, вы выйдете из всех классов.'} Это нельзя отменить.</p><label>Пароль для подтверждения</label><input id="ac_dp" type="password" autocomplete="off" style="max-width:320px"><button class="btn danger" style="margin-top:12px" onclick="accDel()">Удалить аккаунт навсегда</button></div>`;
+}
+const accName=A(async()=>{const d=await api('/api/account','PUT',{name:$('#ac_n').value});me=d.user;toast('Сохранено');redrawCab()});
+const accEmail=A(async()=>{const d=await api('/api/account/email','POST',{email:$('#ac_e').value,password:$('#ac_ep').value});me=d.user;toast('Email изменён');redrawCab()});
+const accPass=A(async()=>{
+  const n=$('#ac_np').value;
+  if(n!==$('#ac_np2').value)return toast('Новые пароли не совпадают');
+  await api('/api/account/password','POST',{old:$('#ac_op').value,password:n});
+  ['ac_op','ac_np','ac_np2'].forEach(i=>{$('#'+i).value=''});toast('Пароль изменён');
+});
+const accDel=A(async()=>{
+  if(!confirm('Удалить аккаунт и все данные навсегда?'))return;
+  await api('/api/account/delete','POST',{password:$('#ac_dp').value});
+  me=null;location.href='/';
+});
+function ideaCard(i){return `<div class="idea"><b>${esc(IDEAS[i][0])}</b><div class="muted small" style="margin:4px 0 10px">${esc(IDEAS[i][1])}</div><button class="btn sec sm" onclick="wish(${i})">Хочу это</button></div>`}
+function fbHtml(){
+  return `<div class="card"><h2>Пожелания и идеи</h2><p class="muted">Сайт делается вместе с пользователями. Напишите, чего не хватает, что неудобно или что сломалось, — это читает автор.</p>
+  <label>Тема</label><select id="fb_k" style="max-width:260px"><option>Идея</option><option>Ошибка</option><option>Вопрос</option><option>Другое</option></select>
+  <label>Сообщение</label><textarea id="fb_t" maxlength="1000" placeholder="Например: хочу, чтобы можно было печатать вариант"></textarea>
+  <button class="btn" style="margin-top:12px" onclick="fbSend()">Отправить</button></div>
+  <div class="card"><h2>Идеи для развития</h2><p class="muted">Нажмите «Хочу это» у того, что для вас важнее всего, — так будет понятно, что делать первым.</p><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">${IDEAS.map((_,i)=>ideaCard(i)).join('')}</div></div>`;
+}
+const fbSend=A(async()=>{
+  const t=$('#fb_t').value.trim();
+  if(t.length<3)return toast('Напишите хотя бы пару слов');
+  await api('/api/feedback','POST',{kind:$('#fb_k').value,text:t});
+  $('#fb_t').value='';toast('Спасибо! Сообщение отправлено');
+});
+const wish=A(async i=>{await api('/api/feedback','POST',{kind:'Голос за идею',text:'Хочу: '+IDEAS[i][0]});toast('Учтено, спасибо!')});
+
 /* ---------- учитель ---------- */
-let tTab='quick',T={tasks:[],hws:[],classes:[]},BK={img:''},NH={sel:{},title:'',classId:'',limit:''};
-let QV={n:12,title:'',classId:'',limit:'',slots:[],sel:0};
-function qvInit(n){QV.n=n;const old=QV.slots;QV.slots=Array.from({length:n},(_,i)=>old[i]||{img:'',ans:''})}
-qvInit(12);
-async function loadAll(){const [a,b,c]=await Promise.all([api('/api/tasks'),api('/api/homeworks'),api('/api/classes')]);T.tasks=a.tasks;T.hws=b.homeworks;T.classes=c.classes}
+let tTab='home',T={tasks:[],hws:[],classes:[],ov:{}},BK={img:''},NH={sel:{},title:'',classId:'',limit:''};
+let QV={ex:'p12',title:'',classId:'',limit:'',slots:[],sel:0};
+function qvInit(){const n=EX[QV.ex].n,old=QV.slots;QV.slots=Array.from({length:n},(_,i)=>old[i]||{img:'',ans:''})}
+qvInit();
+async function loadAll(){
+  const [a,b,c,o]=await Promise.all([api('/api/tasks'),api('/api/homeworks'),api('/api/classes'),api('/api/overview')]);
+  T.tasks=a.tasks;T.hws=b.homeworks;T.classes=c.classes;T.ov=o;
+}
 const teacher=A(async()=>{
   if(!me.active)return paywall();
-  layout('<div class="card">Загрузка…</div>');
+  layout('<div class="card" style="margin-top:24px">Загрузка…</div>');
   await loadAll();shell();
 });
-function shell(){
-  const tabs=[['quick','Собрать вариант'],['bank','Банк заданий'],['hws','Домашки'],['cls','Классы']];
-  layout(`<div class="card codebar" style="margin-top:20px"><div><div class="muted small">Ваш код учителя</div><div class="code">${esc(me.teacherCode)}</div></div><div class="sp muted small">Ученик вводит этот код во вкладке «Классы» и попадает в ваш класс.<br><span class="pill g">Бесплатный доступ: вы №${me.seq} из ${stats.freeLimit}</span></div><button class="btn sec sm" onclick="copyText('${esc(me.teacherCode)}')">Копировать код</button></div>
-  <div class="tabs">${tabs.map(t=>`<button class="${tTab===t[0]?'on':''}" onclick="setTab('${t[0]}')">${t[1]}</button>`).join('')}</div><div id="tc"></div>`);
-  renderTab();
+const TT=[['home','Обзор'],['quick','Собрать вариант'],['bank','Банк заданий'],['hws','Домашки'],['cls','Классы'],['acc','Аккаунт и настройки'],['fb','Пожелания и идеи']];
+function shell(){cab(TT,tTab,'setTab',tabHtml())}
+function setTab(t){tTab=t;shell();window.scrollTo(0,0)}
+function tabHtml(){
+  return tTab==='home'?homeHtml():tTab==='quick'?qvHtml():tTab==='bank'?bankHtml():tTab==='hws'?hwsHtml():tTab==='cls'?clsHtml():tTab==='acc'?accHtml():fbHtml();
 }
-function setTab(t){tTab=t;shell()}
-function renderTab(){
-  const el=$('#tc');
-  if(tTab==='quick')el.innerHTML=qvHtml();
-  else if(tTab==='bank')el.innerHTML=bankHtml();
-  else if(tTab==='hws')el.innerHTML=hwsHtml();
-  else el.innerHTML=clsHtml();
-}
+function renderTab(){const e=$('#tc');if(e)e.innerHTML=tabHtml()}
 const classOpts=sel=>`<option value="">Без класса — только по ссылке</option>`+T.classes.map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+
+function homeHtml(){
+  const o=T.ov||{};
+  const steps=[
+    [T.hws.length>0,'Создайте первую домашку','Во вкладке «Собрать вариант» вставьте скриншоты заданий через Ctrl+V и впишите ответы.','quick'],
+    [o.students>0,'Передайте код ученикам','Ваш код: '+me.teacherCode+'. Ученик вводит его в разделе «Классы».','cls'],
+    [o.submissions>0,'Посмотрите результаты','Баллы и ошибки по каждому заданию — во вкладке «Домашки».','hws']
+  ];
+  return `<div class="card"><div class="row wrapr"><div class="sp"><h2>${hello()}, ${esc(me.name)}</h2><p class="muted" style="margin:0">Здесь собрана сводка по вашим классам и домашкам.</p></div><button class="btn" onclick="setTab('quick')">Собрать вариант</button></div></div>
+  <div class="card codebar"><div><div class="muted small">Ваш код учителя</div><div class="code">${esc(me.teacherCode)}</div></div><div class="sp muted small">Ученик вводит этот код во вкладке «Классы» и попадает в ваш класс.<br><span class="pill g" style="margin-top:6px">${me.plan==='pro'?'Подписка активна':'Бесплатный доступ: вы №'+me.seq+' из '+stats.freeLimit}</span></div><button class="btn sec sm" onclick="copyText('${esc(me.teacherCode)}')">Копировать код</button></div>
+  <div class="stats"><div class="tile"><b>${o.homeworks||0}</b><span>домашек создано</span></div><div class="tile"><b>${o.students||0}</b><span>учеников в классах</span></div><div class="tile"><b>${o.submissions||0}</b><span>сдано работ</span></div><div class="tile"><b>${o.avg||0}%</b><span>средний результат</span></div><div class="tile"><b>${o.tasks||0}</b><span>заданий в банке</span></div></div>
+  <div class="card"><h2>Первые шаги</h2>${steps.map((s,i)=>`<div class="chk ${s[0]?'done':''}"><span class="dot">${s[0]?'✓':i+1}</span><div class="sp"><b>${s[1]}</b><div class="muted small">${esc(s[2])}</div></div><button class="btn sec sm" onclick="setTab('${s[3]}')">Открыть</button></div>`).join('')}</div>
+  <div class="card"><h2>Последние сдачи</h2>${o.recent&&o.recent.length?`<table><tr><th>Ученик</th><th>Домашка</th><th>Баллы</th><th>Дата</th></tr>${o.recent.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.title)}</td><td><b>${r.score}</b> из ${r.maxScore}</td><td class="muted">${fdate(r.date)}</td></tr>`).join('')}</table>`:'<p class="muted">Пока никто не сдавал. Как только ученики начнут сдавать домашки, здесь появятся результаты.</p>'}</div>
+  <div class="card"><div class="row wrapr"><h2 class="sp">Что поможет улучшить сайт</h2><button class="btn sec sm" onclick="setTab('fb')">Все идеи и форма</button></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">${[0,1,2,3].map(ideaCard).join('')}</div></div>`;
+}
 
 /* быстрый вариант */
 function qvHtml(){
-  return `<div class="card"><h2>Быстрый вариант из скриншотов</h2><p class="muted">Сделайте скриншот задания (Win+Shift+S) и нажмите <b>Ctrl+V</b> на этой странице — картинка встанет в первый пустой слот. Впишите ответ под картинкой. Для заданий с развёрнутым ответом (часть 2) оставьте ответ пустым — они не проверяются автоматически. Можно выбрать слот кликом.</p>
-  <div class="row gap wrapr"><div class="seg">${[12,19].map(n=>`<button class="${QV.n===n?'on':''}" onclick="qvN(${n})">${n} заданий</button>`).join('')}</div>
-  <input placeholder="Название (например, Вариант 1)" value="${esc(QV.title)}" oninput="QV.title=this.value" style="flex:1;min-width:200px">
-  <select style="width:auto;min-width:200px" onchange="QV.classId=this.value">${classOpts(QV.classId)}</select>
-  <input type="number" min="0" placeholder="Минут (необяз.)" value="${esc(QV.limit)}" oninput="QV.limit=this.value" style="width:150px"></div>
+  const ex=EX[QV.ex];
+  return `<div class="card"><h2>Быстрый вариант из скриншотов</h2><p class="muted">Сделайте скриншот задания (Win+Shift+S) и нажмите <b>Ctrl+V</b> на этой странице — картинка встанет в первый пустой слот. Впишите ответ под картинкой. Слот можно выбрать кликом.</p>
+  <label>Экзамен</label><div class="seg">${Object.keys(EX).map(k=>`<button class="${QV.ex===k?'on':''}" onclick="qvEx('${k}')">${EX[k].label} (${EX[k].n})</button>`).join('')}</div>
+  <p class="small muted" style="margin-top:8px">${ex.short<ex.n?`Задания 1–${ex.short} — краткий ответ (проверяются автоматически). Задания ${ex.short+1}–${ex.n} — развёрнутый ответ: оставьте поле пустым, их проверит учитель.`:`Все ${ex.n} заданий — с кратким ответом, проверяются автоматически.`}</p>
+  <div class="row gap wrapr" style="margin-top:12px"><input placeholder="Название (например, Вариант 1)" value="${esc(QV.title)}" oninput="QV.title=this.value" style="flex:1;min-width:200px"><select style="width:auto;min-width:200px" onchange="QV.classId=this.value">${classOpts(QV.classId)}</select><input type="number" min="0" placeholder="Минут (необяз.)" value="${esc(QV.limit)}" oninput="QV.limit=this.value" style="width:150px"></div>
   <div class="slots" id="qgrid">${qvSlots()}</div>
   <button class="btn big" onclick="qvCreate()">Создать домашку и получить ссылку</button></div>`;
 }
 function qvSlots(){
-  return QV.slots.map((s,i)=>`<div class="slot ${i===QV.sel?'sel':''}" onclick="qvSel(${i})"><div class="sn">${i+1}</div>${s.img?`<img src="${s.img}"><button class="x" onclick="event.stopPropagation();qvClr(${i})">×</button>`:'<div class="ph">Ctrl+V</div>'}<input placeholder="Ответ" value="${esc(s.ans)}" oninput="QV.slots[${i}].ans=this.value" onclick="event.stopPropagation()"></div>`).join('');
+  const ex=EX[QV.ex];
+  return QV.slots.map((s,i)=>`<div class="slot ${i===QV.sel?'sel':''}" onclick="qvSel(${i})"><div class="sn">${i+1}${i>=ex.short?' · ч.2':''}</div>${s.img?`<img src="${s.img}"><button class="x" onclick="event.stopPropagation();qvClr(${i})">×</button>`:'<div class="ph">Ctrl+V</div>'}<input placeholder="${i>=ex.short?'Без ответа — проверит учитель':'Ответ'}" value="${esc(s.ans)}" oninput="QV.slots[${i}].ans=this.value" onclick="event.stopPropagation()"></div>`).join('');
 }
-function qvN(n){qvInit(n);renderTab()}
+function qvEx(k){QV.ex=k;QV.sel=0;qvInit();renderTab()}
 function qvSel(i){QV.sel=i;$('#qgrid').innerHTML=qvSlots()}
 function qvClr(i){QV.slots[i].img='';$('#qgrid').innerHTML=qvSlots()}
 function putSlot(data){
@@ -244,14 +338,15 @@ document.addEventListener('paste',e=>{
 const qvCreate=A(async()=>{
   const items=QV.slots.map(s=>({img:s.img,answer:s.ans.trim()})).filter(s=>s.img);
   if(!items.length)return toast('Вставьте хотя бы один скриншот (Ctrl+V)');
-  const title=QV.title.trim()||('Вариант от '+new Date().toLocaleDateString('ru-RU'));
-  const d=await api('/api/homeworks','POST',{title,items,classId:QV.classId||null,timeLimit:+QV.limit||0});
-  QV.slots=[];qvInit(QV.n);QV.title='';QV.sel=0;
+  const label=EX[QV.ex].label;
+  const title=QV.title.trim()||(label+' · '+new Date().toLocaleDateString('ru-RU'));
+  const d=await api('/api/homeworks','POST',{title,exam:label,items,classId:QV.classId||null,timeLimit:+QV.limit||0});
+  QV.slots=[];qvInit();QV.title='';QV.sel=0;
   await loadAll();shell();showLink(d.homework.id);
 });
 function showLink(id){
   const link=location.origin+'/h/'+id;
-  modal(`<h2>Домашка создана</h2><p class="muted">Отправьте эту ссылку ученикам:</p><input readonly value="${link}" onclick="this.select()"><div class="row" style="margin-top:14px"><button class="btn" onclick="copyText('${link}')">Копировать ссылку</button><button class="btn sec" onclick="closeModal();tTab='hws';shell();showRes('${id}')">Результаты</button><button class="btn sec" onclick="closeModal()">Закрыть</button></div>`);
+  modal(`<h2>Домашка создана</h2><p class="muted">Отправьте эту ссылку ученикам:</p><input readonly value="${link}" onclick="this.select()"><div class="row wrapr" style="margin-top:14px"><button class="btn" onclick="copyText('${link}')">Копировать ссылку</button><button class="btn sec" onclick="closeModal();tTab='hws';shell();showRes('${id}')">Результаты</button><button class="btn sec" onclick="closeModal()">Закрыть</button></div>`);
 }
 
 /* банк */
@@ -262,7 +357,7 @@ function bankHtml(){
   <button class="btn" style="margin-top:14px" onclick="bkAdd()">Добавить в банк</button></div>
   <div class="card"><h2>Мои задания (${T.tasks.length})</h2>${T.tasks.length?T.tasks.map(t=>`<div class="item">${t.img?`<img class="thumb" src="${t.img}">`:''}<div class="sp"><div>${esc((t.text||'(картинка)').slice(0,120))}</div><div class="muted small">Ответ: ${esc(t.answer||'— (не проверяется)')}${t.topic?' · '+esc(t.topic):''}</div></div><button class="btn danger sm" onclick="bkDel('${t.id}')">Удалить</button></div>`).join(''):'<p class="muted">Пока пусто.</p>'}</div>`;
 }
-function bkPrev(){const e=$('#bk_prev');if(e)e.innerHTML=BK.img?`<img src="${BK.img}" style="max-width:300px;border-radius:10px;margin-top:8px;background:#fff">`:''}
+function bkPrev(){const e=$('#bk_prev');if(e)e.innerHTML=BK.img?`<img src="${BK.img}" style="max-width:300px;border-radius:8px;margin-top:8px;background:#fff;border:1px solid var(--line)">`:''}
 const bkFile=A(async inp=>{if(inp.files[0]){BK.img=await shrink(inp.files[0]);bkPrev()}});
 const bkAdd=A(async()=>{
   await api('/api/tasks','POST',{text:$('#bk_t').value,answer:$('#bk_a').value,topic:$('#bk_p').value,img:BK.img});
@@ -275,7 +370,7 @@ function hwsHtml(){
   return `<div class="card"><h2>Новая домашка из банка</h2>${T.tasks.length?`<div class="row gap wrapr"><input placeholder="Название" value="${esc(NH.title)}" oninput="NH.title=this.value" style="flex:1;min-width:200px"><select style="width:auto;min-width:200px" onchange="NH.classId=this.value">${classOpts(NH.classId)}</select><input type="number" min="0" placeholder="Минут" value="${esc(NH.limit)}" oninput="NH.limit=this.value" style="width:120px"></div>
   <div style="max-height:280px;overflow:auto;margin:12px 0">${T.tasks.map(t=>`<label class="item" style="margin:0;color:inherit;font-size:15px;cursor:pointer"><input type="checkbox" style="width:auto" ${NH.sel[t.id]?'checked':''} onchange="NH.sel['${t.id}']=this.checked">${t.img?`<img class="thumb" src="${t.img}">`:''}<span>${esc((t.text||'(картинка)').slice(0,100))}</span></label>`).join('')}</div>
   <button class="btn" onclick="nhCreate()">Создать домашку</button>`:'<p class="muted">Сначала добавьте задания во вкладке «Банк заданий» или соберите вариант из скриншотов.</p>'}</div>
-  <div class="card"><h2>Мои домашки (${T.hws.length})</h2>${T.hws.length?T.hws.map(h=>`<div class="item"><div class="sp"><b>${esc(h.title)}</b><div class="muted small">${fdate(h.created)} · заданий: ${h.count}${h.className?' · '+esc(h.className):''}${h.timeLimit?' · '+h.timeLimit+' мин':''} · сдали: ${h.done}</div></div><button class="btn sec sm" onclick="copyText(location.origin+'/h/${h.id}')">Ссылка</button><button class="btn sm" onclick="showRes('${h.id}')">Результаты</button><button class="btn danger sm" onclick="hwDel('${h.id}')">Удалить</button></div>`).join(''):'<p class="muted">Пока нет домашек.</p>'}</div>`;
+  <div class="card"><h2>Мои домашки (${T.hws.length})</h2>${T.hws.length?T.hws.map(h=>`<div class="item"><div class="sp"><b>${esc(h.title)}</b>${h.exam?` <span class="pill">${esc(h.exam)}</span>`:''}<div class="muted small">${fdate(h.created)} · заданий: ${h.count}${h.className?' · '+esc(h.className):''}${h.timeLimit?' · '+h.timeLimit+' мин':''} · сдали: ${h.done}</div></div><button class="btn sec sm" onclick="copyText(location.origin+'/h/${h.id}')">Ссылка</button><button class="btn sm" onclick="showRes('${h.id}')">Результаты</button><button class="btn danger sm" onclick="hwDel('${h.id}')">Удалить</button></div>`).join(''):'<p class="muted">Пока нет домашек.</p>'}</div>`;
 }
 const nhCreate=A(async()=>{
   const ids=Object.keys(NH.sel).filter(k=>NH.sel[k]);
@@ -298,25 +393,37 @@ const subDel=A(async(sid,hid)=>{if(!confirm('Сбросить попытку? У
 function clsHtml(){
   return `<div class="card"><h2>Новый класс</h2><div class="row gap"><input id="cl_n" placeholder="Например, 11А" onkeydown="if(event.key==='Enter')clAdd()"><button class="btn" onclick="clAdd()">Создать</button></div></div>
   ${T.classes.map(c=>`<div class="card"><div class="row wrapr"><h3 class="sp">${esc(c.name)} ${c.isMain?'<span class="pill">основной</span>':''}</h3><span class="muted small">Код класса:</span><b class="code" style="font-size:20px">${esc(c.code)}</b><button class="btn sec sm" onclick="copyText('${esc(c.code)}')">Копировать</button>${c.isMain?'':`<button class="btn danger sm" onclick="clDel('${c.id}')">Удалить</button>`}</div>
-  ${c.students.length?c.students.map(s=>`<div class="item"><span class="sp">${esc(s.name)} <span class="muted small">${esc(s.email)}</span></span><button class="btn danger sm" onclick="clKick('${c.id}','${s.id}')">Убрать</button></div>`).join(''):'<p class="muted" style="margin-top:10px">Пока нет учеников. Передайте им код класса.</p>'}</div>`).join('')}`;
+  ${c.students.length?c.students.map(s=>`<div class="item"><span class="sp">${esc(s.name)} <span class="muted small">${esc(s.email)}</span></span><button class="btn danger sm" onclick="clKick('${c.id}','${s.id}')">Убрать</button></div>`).join(''):'<p class="muted" style="margin:10px 0 0">Пока нет учеников. Передайте им код класса.</p>'}</div>`).join('')}`;
 }
 const clAdd=A(async()=>{await api('/api/classes','POST',{name:$('#cl_n').value});await loadAll();renderTab()});
 const clDel=A(async id=>{if(!confirm('Удалить класс?'))return;await api('/api/classes/'+id,'DELETE');await loadAll();renderTab()});
 const clKick=A(async(c,s)=>{await api('/api/classes/'+c+'/students/'+s,'DELETE');await loadAll();renderTab()});
 
 /* ---------- ученик ---------- */
-let sTab='todo',S={todo:[],done:[],classes:[]};
+let sTab='home',S={todo:[],done:[],classes:[]};
 const student=A(async()=>{
-  layout('<div class="card">Загрузка…</div>');
+  layout('<div class="card" style="margin-top:24px">Загрузка…</div>');
   S=await api('/api/my');sview();
 });
-function sview(){
-  const tabs=[['todo','К выполнению ('+S.todo.length+')'],['done','Выполнено ('+S.done.length+')'],['cls','Классы']];
-  let body='';
-  if(sTab==='todo')body=S.todo.length?S.todo.map(h=>`<div class="item"><div class="sp"><b>${esc(h.title)}</b><div class="muted small">${esc(h.teacher)} · заданий: ${h.count}${h.timeLimit?' · '+h.timeLimit+' мин':''}</div></div><a class="btn sm" href="/h/${h.id}">Открыть</a></div>`).join(''):'<p class="muted">Невыполненных домашек нет. Если учитель дал вам код — введите его во вкладке «Классы».</p>';
-  else if(sTab==='done')body=S.done.length?S.done.map(h=>`<div class="item"><div class="sp"><b>${esc(h.title)}</b><div class="muted small">${fdate(h.date)}</div></div><span class="pill ${h.maxScore&&h.score/h.maxScore>=.5?'g':'r'}">${h.score} из ${h.maxScore}</span><a class="btn sec sm" href="/h/${h.hwId}">Разбор</a></div>`).join(''):'<p class="muted">Пока нет выполненных домашек.</p>';
-  else body=`<div class="row gap"><input id="jc" placeholder="Код учителя или класса" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')joinCls()"><button class="btn" onclick="joinCls()">Вступить</button></div><div style="margin-top:14px">${S.classes.map(c=>`<div class="item"><div class="sp"><b>${esc(c.name)}</b><div class="muted small">Учитель: ${esc(c.teacher)}</div></div><button class="btn danger sm" onclick="leaveCls('${c.id}')">Выйти</button></div>`).join('')}</div>`;
-  layout(`<div class="tabs" style="margin-top:24px">${tabs.map(t=>`<button class="${sTab===t[0]?'on':''}" onclick="sTab='${t[0]}';sview()">${t[1]}</button>`).join('')}</div><div class="card">${body}</div>`);
+function stItems(){return [['home','Обзор'],['todo','К выполнению ('+S.todo.length+')'],['done','Выполнено ('+S.done.length+')'],['cls','Классы'],['acc','Аккаунт и настройки'],['fb','Пожелания и идеи']]}
+function setSTab(t){sTab=t;sview();window.scrollTo(0,0)}
+function sview(){cab(stItems(),sTab,'setSTab',sHtml())}
+function todoRow(h){return `<div class="item"><div class="sp"><b>${esc(h.title)}</b>${h.exam?` <span class="pill">${esc(h.exam)}</span>`:''}<div class="muted small">${esc(h.teacher)} · заданий: ${h.count}${h.timeLimit?' · '+h.timeLimit+' мин':''}</div></div><a class="btn sm" href="/h/${h.id}">Открыть</a></div>`}
+function doneRow(h){return `<div class="item"><div class="sp"><b>${esc(h.title)}</b>${h.exam?` <span class="pill">${esc(h.exam)}</span>`:''}<div class="muted small">${fdate(h.date)}</div></div><span class="pill ${h.maxScore&&h.score/h.maxScore>=.5?'g':'r'}">${h.score} из ${h.maxScore}</span><a class="btn sec sm" href="/h/${h.hwId}">Разбор</a></div>`}
+function joinBox(){return `<div class="row gap"><input id="jc" placeholder="Код учителя или класса" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')joinCls()"><button class="btn" onclick="joinCls()">Вступить</button></div>`}
+function sHtml(){
+  if(sTab==='acc')return accHtml();
+  if(sTab==='fb')return fbHtml();
+  if(sTab==='todo')return `<div class="card"><h2>К выполнению</h2>${S.todo.length?S.todo.map(todoRow).join(''):'<p class="muted">Невыполненных домашек нет. Если учитель дал вам код — введите его во вкладке «Классы».</p>'}</div>`;
+  if(sTab==='done')return `<div class="card"><h2>Выполнено</h2>${S.done.length?S.done.map(doneRow).join(''):'<p class="muted">Пока нет выполненных домашек.</p>'}</div>`;
+  if(sTab==='cls')return `<div class="card"><h2>Мои классы</h2><p class="muted">Введите код, который дал учитель, чтобы видеть его домашки.</p>${joinBox()}<div style="margin-top:14px">${S.classes.map(c=>`<div class="item"><div class="sp"><b>${esc(c.name)}</b><div class="muted small">Учитель: ${esc(c.teacher)}</div></div><button class="btn danger sm" onclick="leaveCls('${c.id}')">Выйти</button></div>`).join('')}</div></div>`;
+  const avg=S.done.length?Math.round(S.done.reduce((a,h)=>a+(h.maxScore?h.score/h.maxScore:0),0)/S.done.length*100):0;
+  return `<div class="card"><h2>${hello()}, ${esc(me.name)}</h2><p class="muted" style="margin:0">Здесь ваши домашки и результаты.</p></div>
+  <div class="stats"><div class="tile"><b>${S.todo.length}</b><span>к выполнению</span></div><div class="tile"><b>${S.done.length}</b><span>выполнено</span></div><div class="tile"><b>${avg}%</b><span>средний результат</span></div><div class="tile"><b>${S.classes.length}</b><span>классов</span></div></div>
+  ${S.classes.length?'':`<div class="card"><h2>Вступите в класс</h2><p class="muted">Введите код, который дал учитель, — и его домашки появятся здесь.</p>${joinBox()}</div>`}
+  <div class="card"><div class="row"><h2 class="sp">Ближайшие домашки</h2><button class="btn sec sm" onclick="setSTab('todo')">Все</button></div>${S.todo.length?S.todo.slice(0,3).map(todoRow).join(''):'<p class="muted">Всё сдано — отличная работа.</p>'}</div>
+  <div class="card"><div class="row"><h2 class="sp">Последние результаты</h2><button class="btn sec sm" onclick="setSTab('done')">Все</button></div>${S.done.length?S.done.slice(0,3).map(doneRow).join(''):'<p class="muted">Пока нет результатов.</p>'}</div>
+  <div class="card"><div class="row wrapr"><h2 class="sp">Что поможет улучшить сайт</h2><button class="btn sec sm" onclick="setSTab('fb')">Все идеи и форма</button></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">${[3,4,6,7].map(ideaCard).join('')}</div></div>`;
 }
 const joinCls=A(async()=>{await api('/api/classes/join','POST',{code:$('#jc').value});S=await api('/api/my');sTab='todo';sview();toast('Вы в классе')});
 const leaveCls=A(async id=>{await api('/api/classes/'+id+'/leave','POST',{});S=await api('/api/my');sview()});
@@ -324,16 +431,16 @@ const leaveCls=A(async id=>{await api('/api/classes/'+id+'/leave','POST',{});S=a
 /* ---------- страница домашки ---------- */
 let HW=null,HT=null;
 const hwPage=A(async id=>{
-  layout('<div class="card">Загрузка…</div>');
+  layout('<div class="card" style="margin-top:24px">Загрузка…</div>');
   let d;
-  try{d=await api('/api/hw/'+id)}catch(e){layout('<div class="card c"><h2>Домашка не найдена</h2><a class="btn" href="/">На главную</a></div>');return}
+  try{d=await api('/api/hw/'+id)}catch(e){layout('<div class="card c" style="margin-top:24px"><h2>Домашка не найдена</h2><a class="btn" href="/">На главную</a></div>');return}
   HW=Object.assign({id,answers:{},guest:''},d);
   if(d.result)return hwResult(d.result);
   hwIntro();
 });
 function hwIntro(){
   const h=HW.homework;
-  layout(`<div class="card" style="max-width:640px;margin:40px auto"><a href="/" class="small">← На главную</a><h2 style="margin-top:10px">${esc(h.title)}</h2><p class="muted">Учитель: ${esc(h.teacher)} · заданий: ${h.count}${h.timeLimit?' · время: '+h.timeLimit+' мин':''}</p>
+  layout(`<div class="card" style="max-width:640px;margin:40px auto"><a href="/" class="small">← На главную</a><h2 style="margin-top:10px">${esc(h.title)}</h2>${h.exam?`<p><span class="pill">${esc(h.exam)}</span></p>`:''}<p class="muted">Учитель: ${esc(h.teacher)} · заданий: ${h.count}${h.timeLimit?' · время: '+h.timeLimit+' мин':''}</p>
   ${h.isOwner?`<div class="warn">Это ваша домашка — вы видите её как ученик, отправлять ответы нельзя.</div><div class="row" style="margin-top:12px"><button class="btn" onclick="hwForm()">Посмотреть задания</button></div>`
   :me&&me.role==='teacher'?`<div class="warn">Учитель не может сдавать домашки.</div>`
   :`${me?'':`<label>Ваше имя</label><input id="gname" placeholder="Имя и фамилия"><p class="small muted">Хотите, чтобы результаты сохранялись? <a href="/">Зарегистрируйтесь как ученик</a>.</p>`}${h.timeLimit?`<p class="warn small" style="margin-top:12px">После нажатия «Начать» пойдёт таймер на ${h.timeLimit} мин.</p>`:''}<button class="btn big" style="margin-top:14px" onclick="hwStart()">Начать</button>`}</div>`);
@@ -346,7 +453,7 @@ const hwStart=A(async()=>{
 });
 function hwForm(){
   const h=HW.homework,ro=h.isOwner;
-  layout(`<div style="max-width:760px;margin:24px auto"><div class="row"><h2 class="sp">${esc(h.title)}</h2>${HW.endAt?'<div class="timer" id="timer">…</div>':''}</div><div class="card">${HW.tasks.map(t=>`<div class="task"><b>Задание ${t.i+1}</b>${t.text?`<p>${esc(t.text)}</p>`:''}${t.img?`<img src="${t.img}">`:''}${ro?'':(t.auto?`<input placeholder="Ваш ответ" value="${esc(HW.answers[t.i]||'')}" oninput="HW.answers[${t.i}]=this.value">`:`<input placeholder="Ответ (проверит учитель)" value="${esc(HW.answers[t.i]||'')}" oninput="HW.answers[${t.i}]=this.value">`)}</div>`).join('')}</div>
+  layout(`<div style="max-width:760px;margin:24px auto"><div class="row"><h2 class="sp">${esc(h.title)}</h2>${HW.endAt?'<div class="timer" id="timer">…</div>':''}</div><div class="card">${HW.tasks.map(t=>`<div class="task"><b>Задание ${t.i+1}</b>${t.text?`<p>${esc(t.text)}</p>`:''}${t.img?`<img src="${t.img}">`:''}${ro?'':`<input placeholder="${t.auto?'Ваш ответ':'Ответ (проверит учитель)'}" value="${esc(HW.answers[t.i]||'')}" oninput="HW.answers[${t.i}]=this.value">`}</div>`).join('')}</div>
   ${ro?'<a class="btn" href="/">В кабинет</a>':'<button class="btn big" onclick="hwSubmit()">Сдать работу</button>'}</div>`);
   clearInterval(HT);
   if(HW.endAt&&!ro){HT=setInterval(()=>{
@@ -364,7 +471,7 @@ const hwSubmit=A(async()=>{
 });
 function hwResult(r){
   const h=HW.homework;
-  layout(`<div style="max-width:760px;margin:24px auto"><a href="/" class="small">← ${me?'В кабинет':'На главную'}</a><div class="card c"><h2>${esc(h.title)}</h2><div style="font-size:48px;font-weight:700;color:var(--blue)">${r.score} из ${r.maxScore}</div><p class="muted">${fdate(r.date)}</p>${me?'':'<p class="small muted">Чтобы сохранять результаты, <a href="/">зарегистрируйтесь как ученик</a>.</p>'}</div>
+  layout(`<div style="max-width:760px;margin:24px auto"><a href="/" class="small">← ${me?'В кабинет':'На главную'}</a><div class="card c" style="margin-top:10px"><h2>${esc(h.title)}</h2><div style="font-size:48px;font-weight:700;color:var(--navy)">${r.score} из ${r.maxScore}</div><p class="muted">${fdate(r.date)}</p>${me?'':'<p class="small muted">Чтобы сохранять результаты, <a href="/">зарегистрируйтесь как ученик</a>.</p>'}</div>
   <div class="card"><h3>Разбор</h3>${HW.tasks.map(t=>{const d=r.details[t.i]||{};return `<div class="task"><b>Задание ${t.i+1}</b> ${d.correct===true?'<span class="ok">✓ верно</span>':d.correct===false?'<span class="bad">✗ неверно</span>':'<span class="muted">проверяет учитель</span>'}${t.text?`<p>${esc(t.text)}</p>`:''}${t.img?`<img src="${t.img}">`:''}<div class="small">Ваш ответ: <b>${esc(d.given||'—')}</b>${d.correct===false?` · Правильный: <b class="ok">${esc(String(d.right).split('|')[0])}</b>`:''}</div></div>`}).join('')}</div></div>`);
 }
 

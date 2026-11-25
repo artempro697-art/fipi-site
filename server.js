@@ -8,8 +8,8 @@ const SB_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
 const SB_KEY = (process.env.SUPABASE_KEY || '').trim();
 const USE_SB = !!(SB_URL && SB_KEY);
 const FILE = path.join(process.env.DATA_DIR || __dirname, 'data.json');
-const KEYS = ['users', 'sessions', 'tasks', 'homeworks', 'submissions', 'classes', 'starts', 'requests'];
-const DEF = { users: [], sessions: {}, tasks: [], homeworks: [], submissions: [], classes: [], starts: {}, requests: [] };
+const KEYS = ['users', 'sessions', 'tasks', 'homeworks', 'submissions', 'classes', 'starts', 'requests', 'feedback'];
+const DEF = { users: [], sessions: {}, tasks: [], homeworks: [], submissions: [], classes: [], starts: {}, requests: [], feedback: [] };
 
 let db = {};
 const dirty = new Set();
@@ -99,6 +99,10 @@ function genCode() {
   return c;
 }
 const hashPw = (pw, salt) => crypto.scryptSync(pw, salt, 64).toString('hex');
+function pwOk(u, pw) {
+  const a = Buffer.from(hashPw(String(pw || ''), u.salt), 'hex'), c = Buffer.from(u.hash, 'hex');
+  return a.length === c.length && crypto.timingSafeEqual(a, c);
+}
 function send(res, code, obj, extra) {
   res.writeHead(code, Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, extra || {}));
   res.end(JSON.stringify(obj));
@@ -134,7 +138,11 @@ function startSession(req, u) {
   return 'sid=' + sid + '; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000' + sec;
 }
 const active = u => u.role === 'teacher' && (u.plan === 'free' || (u.plan === 'pro' && (!u.proUntil || u.proUntil > Date.now())));
-const pub = u => ({ id: u.id, email: u.email, name: u.name, role: u.role, teacherCode: u.teacherCode || null, seq: u.seq || null, plan: u.plan || null, active: u.role === 'teacher' ? active(u) : true });
+const pub = u => ({
+  id: u.id, email: u.email, name: u.name, role: u.role, created: u.created || 0,
+  teacherCode: u.teacherCode || null, seq: u.seq || null, plan: u.plan || null, proUntil: u.proUntil || 0,
+  active: u.role === 'teacher' ? active(u) : true
+});
 const nameOf = id => { const u = db.users.find(x => x.id === id); return u ? u.name : '—'; };
 function stats() {
   const t = db.users.filter(u => u.role === 'teacher').length;
@@ -146,6 +154,15 @@ const isRight = (given, right) => { const g = norm(given); return g !== '' && St
 
 const fails = {};
 const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+function checkPw(req, res, u, pw) {
+  const ip = ipOf(req), f = fails[ip];
+  if (f && f.until > Date.now()) { send(res, 429, { error: 'Слишком много попыток. Подождите 10 минут.' }); return false; }
+  if (pwOk(u, pw)) { delete fails[ip]; return true; }
+  const x = fails[ip] || (fails[ip] = { n: 0, until: 0 });
+  if (++x.n >= 10) { x.until = Date.now() + 600000; x.n = 0; }
+  send(res, 401, { error: 'Неверный пароль' });
+  return false;
+}
 
 /* ---------- регистрация / вход ---------- */
 function register(req, res, b) {
@@ -160,9 +177,9 @@ function register(req, res, b) {
   const salt = crypto.randomBytes(16).toString('hex');
   const u = { id: rid(10), email, name, role, salt, hash: hashPw(pw, salt), created: Date.now() };
   if (role === 'teacher') {
-    const n = db.users.filter(x => x.role === 'teacher').length;
-    u.seq = n + 1;
-    u.plan = n < FREE_LIMIT ? 'free' : 'none';
+    const ts = db.users.filter(x => x.role === 'teacher');
+    u.seq = Math.max(0, ...ts.map(x => x.seq || 0)) + 1;
+    u.plan = ts.length < FREE_LIMIT ? 'free' : 'none';
     u.teacherCode = genCode();
     db.classes.push({ id: rid(), teacherId: u.id, name: 'Мои ученики', code: u.teacherCode, students: [], created: Date.now() });
     save('classes');
@@ -174,11 +191,7 @@ function login(req, res, b) {
   const ip = ipOf(req), f = fails[ip];
   if (f && f.until > Date.now()) return send(res, 429, { error: 'Слишком много попыток. Подождите 10 минут.' });
   const u = db.users.find(x => x.email === str(b.email, 100).toLowerCase());
-  let ok = false;
-  if (u) {
-    const a = Buffer.from(hashPw(String(b.password || ''), u.salt), 'hex'), c = Buffer.from(u.hash, 'hex');
-    ok = a.length === c.length && crypto.timingSafeEqual(a, c);
-  }
+  const ok = !!u && pwOk(u, b.password);
   if (!ok) {
     const x = fails[ip] || (fails[ip] = { n: 0, until: 0 });
     if (++x.n >= 10) { x.until = Date.now() + 600000; x.n = 0; }
@@ -188,6 +201,23 @@ function login(req, res, b) {
   send(res, 200, { user: pub(u) }, { 'Set-Cookie': startSession(req, u) });
 }
 
+/* ---------- аккаунт ---------- */
+function removeUser(u) {
+  if (u.role === 'teacher') {
+    const hwIds = db.homeworks.filter(h => h.teacherId === u.id).map(h => h.id);
+    db.homeworks = db.homeworks.filter(h => h.teacherId !== u.id);
+    db.submissions = db.submissions.filter(s => !hwIds.includes(s.hwId));
+    db.tasks = db.tasks.filter(t => t.teacherId !== u.id);
+    db.classes = db.classes.filter(c => c.teacherId !== u.id);
+  } else {
+    db.submissions = db.submissions.filter(s => s.userId !== u.id);
+    db.classes.forEach(c => { c.students = c.students.filter(x => x !== u.id); });
+  }
+  db.users = db.users.filter(x => x !== u);
+  for (const k in db.sessions) if (db.sessions[k].uid === u.id) delete db.sessions[k];
+  save('homeworks', 'submissions', 'tasks', 'classes', 'users', 'sessions');
+}
+
 /* ---------- админ ---------- */
 function admin(res, p, url) {
   if (!ADMIN_KEY || url.searchParams.get('key') !== ADMIN_KEY) return send(res, 403, { error: 'Нет доступа' });
@@ -195,7 +225,8 @@ function admin(res, p, url) {
     return send(res, 200, {
       stats: stats(),
       teachers: db.users.filter(u => u.role === 'teacher').map(u => ({ email: u.email, name: u.name, seq: u.seq, plan: u.plan, proUntil: u.proUntil || 0, created: u.created })),
-      requests: db.requests
+      requests: db.requests,
+      feedback: db.feedback.slice().reverse()
     });
   }
   const u = db.users.find(x => x.email === String(url.searchParams.get('email') || '').toLowerCase() && x.role === 'teacher');
@@ -221,7 +252,7 @@ async function hwRoute(req, res, id, act, b, user) {
   const tasks = hw.items.map((x, i) => ({ i, text: x.text, img: x.img, auto: !!x.answer }));
   if (!act && req.method === 'GET') {
     const out = {
-      homework: { id: hw.id, title: hw.title, timeLimit: hw.timeLimit || 0, teacher: nameOf(hw.teacherId), count: hw.items.length, isOwner: !!(user && user.id === hw.teacherId) },
+      homework: { id: hw.id, title: hw.title, exam: hw.exam || '', timeLimit: hw.timeLimit || 0, teacher: nameOf(hw.teacherId), count: hw.items.length, isOwner: !!(user && user.id === hw.teacherId) },
       tasks
     };
     if (user && user.role === 'student') {
@@ -321,6 +352,50 @@ async function api(req, res, p, m, url) {
     return send(res, 200, { ok: true });
   }
 
+  /* --- аккаунт и пожелания (для всех ролей) --- */
+  if (p === '/api/account' && m === 'PUT') {
+    const name = str(b.name, 40);
+    if (name.length < 2) return send(res, 400, { error: 'Имя — минимум 2 символа' });
+    user.name = name;
+    db.submissions.forEach(s => { if (s.userId === user.id) s.name = name; });
+    save('users', 'submissions');
+    return send(res, 200, { user: pub(user) });
+  }
+  if (p === '/api/account/email' && m === 'POST') {
+    const email = str(b.email, 100).toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return send(res, 400, { error: 'Укажите корректный email' });
+    if (db.users.some(u => u.email === email && u !== user)) return send(res, 409, { error: 'Этот email уже занят' });
+    if (!checkPw(req, res, user, b.password)) return;
+    user.email = email; save('users');
+    return send(res, 200, { user: pub(user) });
+  }
+  if (p === '/api/account/password' && m === 'POST') {
+    const np = String(b.password || '');
+    if (np.length < 6) return send(res, 400, { error: 'Новый пароль — минимум 6 символов' });
+    if (!checkPw(req, res, user, b.old)) return;
+    user.salt = crypto.randomBytes(16).toString('hex');
+    user.hash = hashPw(np, user.salt);
+    const cur = cookies(req).sid;
+    for (const k in db.sessions) if (db.sessions[k].uid === user.id && k !== cur) delete db.sessions[k];
+    save('users', 'sessions');
+    return send(res, 200, { ok: true });
+  }
+  if (p === '/api/account/delete' && m === 'POST') {
+    if (!checkPw(req, res, user, b.password)) return;
+    removeUser(user);
+    return send(res, 200, { ok: true }, { 'Set-Cookie': 'sid=; HttpOnly; Path=/; Max-Age=0' });
+  }
+  if (p === '/api/feedback' && m === 'POST') {
+    const text = str(b.text, 1000);
+    if (text.length < 3) return send(res, 400, { error: 'Напишите хотя бы пару слов' });
+    const dayAgo = Date.now() - 864e5;
+    if (db.feedback.filter(f => f.userId === user.id && f.date > dayAgo).length >= 10) return send(res, 429, { error: 'Сегодня уже много сообщений. Попробуйте завтра.' });
+    db.feedback.push({ id: rid(), userId: user.id, email: user.email, name: user.name, role: user.role, kind: str(b.kind, 30) || 'Идея', text, date: Date.now() });
+    if (db.feedback.length > 2000) db.feedback.shift();
+    save('feedback');
+    return send(res, 200, { ok: true });
+  }
+
   /* --- ученик --- */
   if (user.role === 'student') {
     if (p === '/api/my' && m === 'GET') {
@@ -330,10 +405,10 @@ async function api(req, res, p, m, url) {
       const todo = db.homeworks
         .filter(h => ids.includes(h.classId) && !mine.some(s => s.hwId === h.id))
         .sort((a, c) => c.created - a.created)
-        .map(h => ({ id: h.id, title: h.title, count: h.items.length, timeLimit: h.timeLimit || 0, teacher: nameOf(h.teacherId) }));
+        .map(h => ({ id: h.id, title: h.title, exam: h.exam || '', count: h.items.length, timeLimit: h.timeLimit || 0, teacher: nameOf(h.teacherId) }));
       const done = mine.map(s => {
         const h = db.homeworks.find(x => x.id === s.hwId);
-        return h ? { hwId: h.id, title: h.title, score: s.score, maxScore: s.maxScore, date: s.date } : null;
+        return h ? { hwId: h.id, title: h.title, exam: h.exam || '', score: s.score, maxScore: s.maxScore, date: s.date } : null;
       }).filter(Boolean).sort((a, c) => c.date - a.date);
       return send(res, 200, { todo, done, classes: cls.map(c => ({ id: c.id, name: c.name, teacher: nameOf(c.teacherId) })) });
     }
@@ -355,6 +430,23 @@ async function api(req, res, p, m, url) {
   /* --- учитель --- */
   if (user.role !== 'teacher') return send(res, 403, { error: 'Нет доступа' });
   if (!active(user)) return send(res, 402, { error: 'Нужна подписка', paywall: true });
+
+  if (p === '/api/overview' && m === 'GET') {
+    const hws = db.homeworks.filter(h => h.teacherId === user.id);
+    const ids = new Set(hws.map(h => h.id));
+    const subs = db.submissions.filter(s => ids.has(s.hwId));
+    const st = new Set();
+    db.classes.filter(c => c.teacherId === user.id).forEach(c => c.students.forEach(x => st.add(x)));
+    const avg = subs.length ? Math.round(subs.reduce((a, s) => a + (s.maxScore ? s.score / s.maxScore : 0), 0) / subs.length * 100) : 0;
+    const recent = subs.sort((a, c) => c.date - a.date).slice(0, 8).map(s => ({
+      name: s.name, score: s.score, maxScore: s.maxScore, date: s.date, hwId: s.hwId,
+      title: (hws.find(h => h.id === s.hwId) || {}).title || ''
+    }));
+    return send(res, 200, {
+      homeworks: hws.length, tasks: db.tasks.filter(t => t.teacherId === user.id).length,
+      students: st.size, submissions: subs.length, avg, recent
+    });
+  }
 
   if (p === '/api/tasks') {
     if (m === 'GET') return send(res, 200, { tasks: db.tasks.filter(t => t.teacherId === user.id) });
@@ -415,7 +507,7 @@ async function api(req, res, p, m, url) {
       return send(res, 200, {
         homeworks: db.homeworks.filter(h => h.teacherId === user.id).sort((a, c) => c.created - a.created).map(h => {
           const c = db.classes.find(k => k.id === h.classId);
-          return { id: h.id, title: h.title, count: h.items.length, classId: h.classId, className: c ? c.name : '', created: h.created, timeLimit: h.timeLimit || 0, done: db.submissions.filter(s => s.hwId === h.id).length };
+          return { id: h.id, title: h.title, exam: h.exam || '', count: h.items.length, classId: h.classId, className: c ? c.name : '', created: h.created, timeLimit: h.timeLimit || 0, done: db.submissions.filter(s => s.hwId === h.id).length };
         })
       });
     }
@@ -439,7 +531,7 @@ async function api(req, res, p, m, url) {
         if (c) classId = c.id;
       }
       const hw = {
-        id: rid(8), teacherId: user.id, title: str(b.title, 80) || 'Домашка', items, classId,
+        id: rid(8), teacherId: user.id, title: str(b.title, 80) || 'Домашка', exam: str(b.exam, 40), items, classId,
         timeLimit: Math.max(0, Math.min(600, parseInt(b.timeLimit, 10) || 0)), created: Date.now()
       };
       db.homeworks.push(hw); save('homeworks');
