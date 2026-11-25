@@ -11,11 +11,12 @@
   }
 
   var css =
-    '#cw{position:fixed;right:18px;bottom:18px;z-index:9999;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#141c2b}' +
+    '#cw{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;gap:8px;align-items:center;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#141c2b}' +
     '#cw [hidden]{display:none!important}' +
     '#cw *{box-sizing:border-box}' +
     '#cw-btn{background:#10203a;color:#fff;border:0;border-radius:24px;padding:11px 16px;font:inherit;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(16,32,58,.35);position:relative}' +
-    '#cw-badge{position:absolute;top:-6px;right:-6px;background:#d92d20;color:#fff;border-radius:10px;min-width:20px;height:20px;padding:0 5px;font-size:12px;line-height:20px;text-align:center}' +
+    '#cw-as{background:#fff;color:#10203a;border:1px solid #c7cfdd;border-radius:24px;padding:11px 16px;font-weight:600;text-decoration:none;box-shadow:0 4px 14px rgba(16,32,58,.2);position:relative}' +
+    '#cw-badge,#cw-ab{position:absolute;top:-6px;right:-6px;background:#d92d20;color:#fff;border-radius:10px;min-width:20px;height:20px;padding:0 5px;font-size:12px;line-height:20px;text-align:center}' +
     '#cw-box{position:absolute;right:0;bottom:52px;width:340px;max-width:calc(100vw - 36px);background:#fff;border:1px solid #d5dbe6;border-radius:10px;box-shadow:0 8px 28px rgba(16,32,58,.25);display:flex;flex-direction:column;overflow:hidden}' +
     '#cw-head{background:#10203a;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:600}' +
     '#cw-x{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;line-height:1}' +
@@ -47,6 +48,7 @@
         '<button id="cw-send" type="button">Отправить</button>' +
       '</div>' +
     '</div>' +
+    '<a id="cw-as" href="/assign" hidden></a>' +
     '<button id="cw-btn" type="button">✉ Написать админу<span id="cw-badge" hidden></span></button>';
   document.body.appendChild(root);
 
@@ -57,6 +59,7 @@
       text = document.getElementById('cw-text'),
       sendBtn = document.getElementById('cw-send'),
       guest = document.getElementById('cw-guest'),
+      asBtn = document.getElementById('cw-as'),
       logged = false;
 
   function j(url, opt) {
@@ -97,6 +100,16 @@
       setBadge(0);
     }).catch(function () {});
   }
+  function tasks() {
+    if (location.pathname === '/assign') { asBtn.hidden = true; return; }
+    j('/x/a/me').then(function (d) {
+      if (d.role === 'teacher' || d.role === 'student') {
+        asBtn.innerHTML = (d.role === 'teacher' ? '📚 Задания' : '📚 Мои задания') +
+          (d.n > 0 ? '<span id="cw-ab">' + d.n + '</span>' : '');
+        asBtn.hidden = false;
+      } else asBtn.hidden = true;
+    }).catch(function () {});
+  }
   function ping() {
     if (document.hidden) return;
     j('/x/ping', {
@@ -106,6 +119,7 @@
     }).then(function (d) {
       if (d.unread > 0) { if (box.hidden) setBadge(d.unread); else load(); }
     }).catch(function () {});
+    tasks();
   }
   function send() {
     var t = text.value.trim();

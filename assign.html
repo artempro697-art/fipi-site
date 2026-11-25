@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Задания — Проверка</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f3f5f9;color:#141c2b}
+[hidden]{display:none!important}
+input,select,textarea,button{font:inherit}
+input,select,textarea{border:1px solid #c7cfdd;border-radius:6px;padding:8px 10px;background:#fff;color:#141c2b;-webkit-text-fill-color:#141c2b;width:100%}
+button{cursor:pointer}
+.btn{background:#1f5fc9;color:#fff;border:0;border-radius:6px;padding:9px 16px;font-weight:600}
+.btn:disabled{opacity:.6}
+.btn.sec{background:#fff;color:#141c2b;border:1px solid #c7cfdd}
+.btn.red{background:#fff;color:#d92d20;border:1px solid #f1b5b0}
+.btn.sm{padding:4px 9px;font-size:13px}
+header{background:#10203a;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header a{color:#fff;text-decoration:none;background:#1f3a66;border-radius:6px;padding:5px 12px;font-size:14px}
+header .sp{flex:1}
+main{max-width:900px;margin:0 auto;padding:18px}
+.box{background:#fff;border:1px solid #d5dbe6;border-radius:8px;padding:16px;margin-bottom:14px;overflow:auto}
+h3{margin:0 0 12px}
+label{display:block;margin-bottom:10px;font-size:14px;color:#3d4757}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+.ck{display:flex;align-items:center;gap:8px;margin:0;padding:5px 0;color:#141c2b}
+.ck input{width:auto}
+.stl{max-height:240px;overflow:auto;border:1px solid #e8ecf3;border-radius:6px;padding:4px 10px;margin:6px 0 12px}
+.empty{color:#5b6679;padding:10px 0}
+.warn{background:#fff4e5;border:1px solid #f5c26b}
+.as{border:1px solid #e3e7ef;border-radius:8px;padding:12px;margin-bottom:12px}
+.as .t{font-weight:600;font-size:16px}
+.as .meta{color:#5b6679;font-size:13px;margin:2px 0 8px}
+.as .note{background:#f3f5f9;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:14px;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%}
+td,th{padding:7px 6px;border-top:1px solid #eef1f6;font-size:14px;text-align:left;vertical-align:middle}
+th{color:#5b6679;font-size:12px;font-weight:600}
+.chip{display:inline-block;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.c-new{background:#eef1f6;color:#5b6679}
+.c-opened{background:#fff4e5;color:#b25e09}
+.c-submitted{background:#e0ecff;color:#1f5fc9}
+.c-reviewed{background:#dcfae6;color:#067647}
+.card{border:1px solid #e3e7ef;border-radius:8px;padding:14px;margin-bottom:12px;background:#fff}
+.card .t{font-weight:600;font-size:17px}
+.card .meta{color:#5b6679;font-size:13px;margin:2px 0 8px}
+.card .cm{background:#dcfae6;border-radius:6px;padding:8px 10px;margin:8px 0;font-size:14px;white-space:pre-wrap}
+.card a.btn{display:inline-block;text-decoration:none;margin-top:6px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#10203a;color:#fff;padding:10px 18px;border-radius:8px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <a href="/">← На сайт</a>
+  <b>Проверка</b><span id="who"></span><span class="sp"></span>
+</header>
+<main id="m"><div class="empty">Загрузка…</div></main>
+<div id="toast"></div>
+
+<script>
+var CL = [], HW = [], ROLE = '';
+var LBL = { 'new': 'Не открыл', opened: 'Открыл', submitted: 'Сдал', reviewed: 'Просмотрено' };
+
+function $(s) { return document.querySelector(s); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function fd(v) {
+  if (!v) return '';
+  var d = new Date(v);
+  return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+function toast(t) {
+  var e = $('#toast'); e.textContent = t; e.classList.add('show');
+  setTimeout(function () { e.classList.remove('show'); }, 3000);
+}
+function api(url, data) {
+  var o = data ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {};
+  return fetch(url, o).then(function (r) {
+    return r.json().catch(function () { return {}; }).then(function (j) {
+      if (!r.ok) throw new Error(j.error || ('Ошибка ' + r.status));
+      return j;
+    });
+  });
+}
+function status(r) { return r.reviewed ? 'reviewed' : r.submitted ? 'submitted' : r.opened ? 'opened' : 'new'; }
+function chip(s) { return '<span class="chip c-' + s + '">' + LBL[s] + '</span>'; }
+
+// ---------- старт ----------
+api('/x/a/me').then(function (me) {
+  ROLE = me.role;
+  if (me.role === 'teacher') { $('#who').textContent = 'Учитель: ' + me.name; initT(); }
+  else if (me.role === 'student') { $('#who').textContent = 'Ученик: ' + me.name; initS(); }
+  else $('#m').innerHTML = '<div class="box">Войдите на сайт, чтобы увидеть задания. <a href="/">Перейти на главную</a></div>';
+}).catch(function (e) { $('#m').innerHTML = '<div class="box warn">' + esc(e.message) + '</div>'; });
+
+// ---------- ученик ----------
+function initS() {
+  loadMy();
+  setInterval(function () { if (!document.hidden) loadMy(); }, 15000);
+}
+function loadMy() {
+  api('/x/a/my').then(function (r) {
+    var h = '<h2 style="margin:0 0 12px">Мои задания</h2>';
+    if (!r.items.length) h += '<div class="box"><div class="empty">Учитель пока ничего вам не выдал. Если вы ещё не в классе, введите код учителя на сайте во вкладке «Классы».</div></div>';
+    r.items.forEach(function (x) {
+      var s = status(x);
+      h += '<div class="card"><div class="t">' + esc(x.title) + ' ' + chip(s) + '</div>' +
+        '<div class="meta">От: ' + esc(x.teacher || 'учителя') + ' · выдано ' + fd(x.created) +
+        (x.submitted ? ' · сдано ' + fd(x.submitted) : '') + '</div>' +
+        (x.note ? '<div>' + esc(x.note) + '</div>' : '') +
+        (s === 'reviewed' ? '<div class="cm"><b>✓ Учитель просмотрел вашу работу</b> ' + fd(x.reviewed) + (x.comment ? '<br>' + esc(x.comment) : '') + '</div>' : '') +
+        (s === 'submitted' ? '<div class="meta">Ждёт проверки учителем.</div>' : '') +
+        '<a class="btn" href="/h/' + encodeURIComponent(x.hwId) + '">' + (s === 'new' || s === 'opened' ? 'Открыть задание' : 'Открыть ещё раз') + '</a></div>';
+    });
+    $('#m').innerHTML = h;
+  }).catch(function (e) { $('#m').innerHTML = '<div class="box warn">' + esc(e.message) + '</div>'; });
+}
+
+// ---------- учитель ----------
+function initT() {
+  Promise.all([api('/x/a/classes'), api('/x/a/homeworks')]).then(function (r) {
+    CL = r[0].classes; HW = r[1].homeworks;
+    drawForm(); loadSent();
+    setInterval(function () { if (!document.hidden) loadSent(); }, 15000);
+  }).catch(function (e) { $('#m').innerHTML = '<div class="box warn">' + esc(e.message) + '</div>'; });
+}
+function drawForm() {
+  var h = '<div class="box"><h3>Выдать задание ученикам</h3>';
+  if (!CL.length) h += '<div class="empty">У вас пока нет классов. Они появляются, когда ученики вступают по вашему коду учителя на сайте (вкладка «Классы»).</div>';
+  else if (!HW.length) h += '<div class="empty">Пока нет домашек. Соберите вариант на сайте и сохраните как домашку.</div>';
+  else {
+    h += '<div class="row"><label>Класс<select id="sc">' + CL.map(function (c) {
+      return '<option value="' + esc(c.id) + '">' + esc(c.name) + ' (' + c.students.length + ')</option>';
+    }).join('') + '</select></label>' +
+      '<label>Домашка<select id="sh">' + HW.map(function (x) {
+        return '<option value="' + esc(x.id) + '">' + esc(x.title) + (x.n ? ' — ' + x.n + ' зад.' : '') + '</option>';
+      }).join('') + '</select></label></div>' +
+      '<div id="sl"></div>' +
+      '<label>Комментарий ученикам (необязательно)<textarea id="sn" rows="2" maxlength="500" placeholder="Например: сдать до пятницы"></textarea></label>' +
+      '<button class="btn" id="go">Отправить выбранным</button>';
+  }
+  h += '</div><div class="box"><h3>Выданные задания</h3><div id="sent"><div class="empty">Загрузка…</div></div></div>';
+  $('#m').innerHTML = h;
+  if (CL.length && HW.length) { $('#sc').onchange = drawSt; $('#go').onclick = go; drawSt(); }
+}
+function curClass() { var id = $('#sc').value; return CL.filter(function (c) { return c.id === id; })[0]; }
+function drawSt() {
+  var c = curClass();
+  if (!c.students.length) { $('#sl').innerHTML = '<div class="empty">В этом классе пока нет учеников.</div>'; return; }
+  $('#sl').innerHTML = '<label class="ck"><input type="checkbox" id="all" checked> <b>Все ученики (' + c.students.length + ')</b></label>' +
+    '<div class="stl">' + c.students.map(function (s) {
+      return '<label class="ck"><input type="checkbox" class="sk" value="' + esc(s.k[0]) + '" checked> ' + esc(s.name) + '</label>';
+    }).join('') + '</div>';
+  $('#all').onchange = function () {
+    Array.prototype.forEach.call(document.querySelectorAll('.sk'), function (x) { x.checked = $('#all').checked; });
+  };
+}
+function go() {
+  var ks = Array.prototype.map.call(document.querySelectorAll('.sk:checked'), function (x) { return x.value; });
+  if (!ks.length) return toast('Выберите хотя бы одного ученика');
+  $('#go').disabled = true;
+  api('/x/a/create', { classId: $('#sc').value, hwId: $('#sh').value, students: ks, note: $('#sn').value })
+    .then(function (r) {
+      toast(r.added ? 'Отправлено: ' + r.added + ' чел.' : 'Всем выбранным это уже выдано');
+      $('#sn').value = '';
+      return loadSent();
+    }).catch(function (e) { toast(e.message); })
+    .then(function () { $('#go').disabled = false; });
+}
+function loadSent() {
+  return api('/x/a/sent').then(function (r) {
+    var el = $('#sent'); if (!el) return;
+    if (!r.items.length) { el.innerHTML = '<div class="empty">Вы ещё ничего не выдавали.</div>'; return; }
+    el.innerHTML = r.items.map(function (a) {
+      var done = a.to.filter(function (x) { return x.submitted; }).length;
+      return '<div class="as"><div class="t">' + esc(a.hwTitle) + '</div>' +
+        '<div class="meta">Выдано ' + fd(a.created) + ' · сдали ' + done + ' из ' + a.to.length +
+        ' · <a href="/h/' + encodeURIComponent(a.hwId) + '" target="_blank">ссылка на домашку</a></div>' +
+        (a.note ? '<div class="note">' + esc(a.note) + '</div>' : '') +
+        '<table><tr><th>Ученик</th><th>Статус</th><th>Когда</th><th></th></tr>' +
+        a.to.map(function (r) {
+          var s = status(r);
+          var when = r.reviewed ? 'просмотрено ' + fd(r.reviewed) : r.submitted ? 'сдано ' + fd(r.submitted) : r.opened ? 'открыто ' + fd(r.opened) : '';
+          return '<tr><td>' + esc(r.name) + '<div class="meta" style="margin:0">' + esc(r.cls || '') + '</div></td><td>' + chip(s) + '</td><td>' + when + '</td><td style="white-space:nowrap;text-align:right">' +
+            (s === 'reviewed'
+              ? '<button class="btn sec sm" data-a="unrev" data-i="' + a.id + '" data-k="' + esc(r.k[0]) + '">Снять отметку</button> '
+              : '<button class="btn sm" data-a="rev" data-i="' + a.id + '" data-k="' + esc(r.k[0]) + '">Просмотрено</button> ') +
+            '<button class="btn red sm" data-a="rm" data-i="' + a.id + '" data-k="' + esc(r.k[0]) + '">Убрать</button></td></tr>';
+        }).join('') + '</table>' +
+        '<div style="margin-top:8px"><button class="btn red sm" data-a="rmall" data-i="' + a.id + '">Убрать выдачу целиком</button></div></div>';
+    }).join('') +
+    '<div class="meta" style="color:#5b6679;font-size:13px">Ответы учеников смотрите на сайте: «Домашки» → результаты. Здесь вы отмечаете, что работу просмотрели — ученик увидит это у себя.</div>';
+  }).catch(function () {});
+}
+$('#m').addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-a]'); if (!b) return;
+  var a = b.dataset.a, id = b.dataset.i, k = b.dataset.k, p;
+  if (a === 'rev') {
+    var c = prompt('Комментарий ученику (можно оставить пустым):', '');
+    if (c === null) return;
+    p = api('/x/a/review', { id: id, key: k, on: true, comment: c });
+  } else if (a === 'unrev') p = api('/x/a/review', { id: id, key: k, on: false });
+  else if (a === 'rm') { if (!confirm('Убрать задание у этого ученика?')) return; p = api('/x/a/remove', { id: id, key: k }); }
+  else if (a === 'rmall') { if (!confirm('Убрать выдачу целиком у всех учеников?')) return; p = api('/x/a/remove', { id: id }); }
+  else return;
+  p.then(loadSent).catch(function (er) { toast(er.message); });
+});
+</script>
+</body>
+</html>
